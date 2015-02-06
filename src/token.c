@@ -100,8 +100,8 @@ Token* token (unsigned char** i)
       (*i)++;
       token->sym = grthan;
       break;
-    default:
-      if ( **i == '"' ) {
+    case '"':
+      do {
         unsigned char* str = malloc(1024);
         int j = 0;
 
@@ -121,7 +121,10 @@ Token* token (unsigned char** i)
 
         token->sym = string;
         token->data = str;
-      } else if ( IS_CREATE_TOK(*i) ) {
+      } while (0);
+      break;
+    default:
+      if ( IS_CREATE_TOK(*i) ) {
         token->sym = create;
         (*i) += 6;
       } else if ( IS_MATCH_TOK(*i) ) {
