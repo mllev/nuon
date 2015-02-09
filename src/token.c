@@ -36,6 +36,8 @@
 
 #define IS_CREATE_TOK(x) !strncmp((const char*)x, "CREATE", 6) || !strncmp((const char*)x, "create", 6)
 #define IS_MATCH_TOK(x) !strncmp((const char*)x, "MATCH", 5) || !strncmp((const char*)x, "match", 5)
+#define IS_RETURN_TOK(x) !strncmp((const char*)x, "RETURN", 6) || !strncmp((const char*)x, "return", 6)
+#define IS_SET_TOK(x) !strncmp((const char*)x, "SET", 3) || !strncmp((const char*)x, "set", 3)
 
 int token_isWhite (unsigned char);
 void token_skipWhite (unsigned char**);
@@ -67,6 +69,14 @@ Token* token (unsigned char** i)
     case ')':
       (*i)++;
       token->sym = rparen; 
+      break;
+    case '.':
+      (*i)++;
+      token->sym = period;
+      break;
+    case '=':
+      (*i)++;
+      token->sym = equals;
       break;
     case '[':
       (*i)++;
@@ -127,8 +137,14 @@ Token* token (unsigned char** i)
       if ( IS_CREATE_TOK(*i) ) {
         token->sym = create;
         (*i) += 6;
+      } else if ( IS_SET_TOK(*i) ) {
+        token->sym = set_sym;
+        (*i) += 3;
+      } else if ( IS_RETURN_TOK(*i) ) {
+        token->sym = return_sym;
+        (*i) += 6;
       } else if ( IS_MATCH_TOK(*i) ) {
-        token->sym = create;
+        token->sym = match;
         (*i) += 5;
       } else if ( (**i >= 65 && **i <= 90) || (**i >= 97 && **i <= 122) ) {
         unsigned char* str = malloc(1024);

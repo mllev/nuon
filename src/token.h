@@ -39,11 +39,12 @@ typedef enum symbol Symbol;
 ***/
 
 enum symbol {
-  lparen = 0,   rparen,  lbrack,
-  rbrack,   lbrace,  rbrace,
-  colon,    create,  match,
-  ident,    string,  
-  comma,    dash,    grthan
+  lparen = 0, rparen,  lbrack,
+  rbrack,     lbrace,  rbrace,
+  colon,      create,  match,
+  ident,      string,  set_sym,
+  comma,      dash,    grthan,
+  return_sym, period,  equals
 };
 
 struct token {

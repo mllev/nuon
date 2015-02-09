@@ -49,14 +49,16 @@ typedef struct {
 
 /* for error reporting */
 const char* symstr[] = {
-  "(",     ")",       "[",
-  "]",     "{",       "}",
-  ":",     "create",  "match",
-  "ident", "string",  
-  ",",     "-",       ">"
+  "(",      ")",       "[",
+  "]",      "{",       "}",
+  ":",      "create",  "match",
+  "ident",  "string",  "set",
+  ",",      "-",       ">",
+  "return", ".",       "="
 };
 
 void getsym (__Global*);
+void error (const char *, const char *);
 
 void _create (__Global*);
 void _match (__Global*);
@@ -66,7 +68,11 @@ void _type (__Global*);
 void _data (__Global*);
 void _keyValueList(__Global*);
 void _expr (__Global*);
-void error (const char *, const char *);
+void _identList (__Global*);
+void _return (__Global*);
+void _set (__Global*);
+void _setList (__Global*);
+void _property (__Global* data);
 
 void error (const char* err, const char* s)
 {
@@ -102,6 +108,49 @@ int expect (__Global* data, Symbol s)
   return 0;
 }
 
+void _identList (__Global* data)
+{
+  expect(data, ident);
+
+  if ( accept(data, period) ) {
+    expect(data, ident);
+  }
+
+  if ( accept(data, comma) ) {
+    _identList(data);
+  }
+}
+
+void _return (__Global* data)
+{
+  if ( accept(data, return_sym) ) {
+    _identList(data);
+  }
+}
+
+void _set (__Global* data)
+{
+  _property(data);
+  expect(data, equals);
+  expect(data, string);
+}
+
+void _setList (__Global* data)
+{
+  if ( accept(data, set_sym) ) {
+    _set(data);
+    _setList(data);
+  }
+}
+
+void _property (__Global* data)
+{
+  expect(data, ident);
+  expect(data, period);
+  expect(data, ident);
+}
+
+
 void _keyValueList (__Global* data)
 {
   expect(data, string);
@@ -111,8 +160,6 @@ void _keyValueList (__Global* data)
   if ( accept(data, comma) ) {
     _keyValueList(data);
   }
-
-  return;
 }
 
 void _data (__Global* data)
@@ -120,8 +167,6 @@ void _data (__Global* data)
   expect(data, lbrace);
   _keyValueList(data);
   expect(data, rbrace);
-
-  return;
 }
 
 void _type (__Global* data)
@@ -132,19 +177,13 @@ void _type (__Global* data)
     expect(data, ident);
     _data(data);
   }
-
-  return;
 }
 
 void _node (__Global* data)
 {
   expect(data, lparen);
-
   _type(data);
-
   expect(data, rparen);
-
-  return;
 }
 
 void _nodeList (__Global* data)
@@ -180,6 +219,8 @@ void _create (__Global* data)
 void _match (__Global* data)
 {
   _nodeList(data);
+  _setList(data);
+  _return(data);
 }
 
 void _expr (__Global* data)

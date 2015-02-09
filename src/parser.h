@@ -55,7 +55,7 @@ NodeList ::=
 
 Create ::=
     "create" NodeList
-======================NEW STUFF======================
+
 Match ::= 
     "match" NodeList SetList Return
 
@@ -64,21 +64,21 @@ Property ::=
 
 IdentList ::=
     ident
-  | Property
+  | ident "." ident
   | ident "," IdentList
-  | Property "," IdentList
+  | ident "." ident "," IdentList
 
 Return ::=
     "return" IdentList
   | null
 
 SetList ::=
-    Set SetList
+    "set" Set SetList
   | null
 
 Set ::=
-    "set" Property "=" string
-======================================================
+    Property "=" string
+
 Expr ::=
     Match Expr
   | Create Expr
@@ -88,7 +88,7 @@ Expr ::=
 
 CREATE (p:Person {"name": "Matt"}), (q:Person {"name": "Jordan"}), (p) -[knows]-> (q)
 
-MATCH (p:Person {name: "Matt"}) -[knows]-> (q) return p, q
+MATCH (p:Person {"name": "Matt"}) -[knows]-> (q) SET p.name = "hello" return p, q
 
 ***************/
 
