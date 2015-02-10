@@ -47,13 +47,15 @@ Type ::=
 Node ::=
     "(" Type Data ")"
 
+Edge ::=
+    "-[" ident ":" ident "]->"
+  | "-[" ":" ident "]->"
+
 NodeList ::= 
     Node 
+  | Node Edge Node
   | Node "," NodeList
-  | Node "-[" ":" ident "]->" Node
-  | Node "-[" ident ":" ident "]->" Node
-  | Node "-[" ":" ident "]->" Node "," NodeList
-  | Node "-[" ident ":" ident "]->" Node "," NodeList
+  | Node Edge Node "," NodeList
 
 Create ::=
     "create" NodeList
@@ -80,6 +82,7 @@ SetList ::=
 
 Set ::=
     Property "=" string
+  | Node Edge Node
 
 Expr ::=
     Match Expr
@@ -90,10 +93,10 @@ Expr ::=
 
 CREATE (p:Person {"name": "Matt"}), (q:Person {"name": "Jordan"}), (p) -[k:knows]-> (q)
 
-MATCH (p:Person {"name": "Matt"}) -[:knows]-> (q) SET p.name = "jim" SET q.age = "25" return p, q
+MATCH (p:Person {"name": "Matt"}) -[:knows]-> (q) SET p.name = "jim" SET q.age = "25" SET (p) -[:hates]-> (q) return p, q
 
 ***************/
 
-void parse (unsigned char**);
+void parse (unsigned char*);
 
 #endif

@@ -59,6 +59,5 @@ const char* query_readline (FILE* f)
 
 void query_exec (const char* program)
 {
-  unsigned char* i = (unsigned char *)program;
-  parse(&i);
+  parse((unsigned char *)program);
 }

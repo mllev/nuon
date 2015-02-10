@@ -39,6 +39,8 @@ typedef struct {
   /* current token */
   Token* tok;
 
+  char cmd[10];
+
   /* program pointer */
   unsigned char** prog;
 
@@ -72,7 +74,8 @@ void _identList (__Global*);
 void _return (__Global*);
 void _set (__Global*);
 void _setList (__Global*);
-void _property (__Global* data);
+void _property (__Global*);
+void _edge (__Global*);
 
 void error (const char* err, const char* s)
 {
@@ -108,6 +111,21 @@ int expect (__Global* data, Symbol s)
   return 0;
 }
 
+void _edge (__Global* data) 
+{
+  expect(data, lbrack);
+
+  if ( accept(data, ident) ) {
+    // this identifier represents the relationship
+  }
+
+  expect(data, colon);
+  expect(data, ident);
+  expect(data, rbrack);
+  expect(data, dash);
+  expect(data, grthan);
+}
+
 void _identList (__Global* data)
 {
   expect(data, ident);
@@ -130,6 +148,17 @@ void _return (__Global* data)
 
 void _set (__Global* data)
 {
+  if ( accept(data, lparen) ) {
+    expect(data, ident);
+    expect(data, rparen);
+    expect(data, dash);
+    _edge(data);
+    expect(data, lparen);
+    expect(data, ident);
+    expect(data, rparen);
+    return;
+  }
+
   _property(data);
   expect(data, equals);
   expect(data, string);
@@ -149,7 +178,6 @@ void _property (__Global* data)
   expect(data, period);
   expect(data, ident);
 }
-
 
 void _keyValueList (__Global* data)
 {
@@ -192,24 +220,14 @@ void _nodeList (__Global* data)
 
   if ( accept(data, comma) ) {
     _nodeList(data);
+    return;
   }
 
   if ( !accept(data, dash) ) {
     return;
   }
 
-  expect(data, lbrack);
-
-  if ( accept(data, ident) ) {
-    // this identifier represents the relationship
-  }
-
-  expect(data, colon);
-  expect(data, ident);
-
-  expect(data, rbrack);
-  expect(data, dash);
-  expect(data, grthan);
+  _edge(data);
 
   _node(data);
 
@@ -220,11 +238,13 @@ void _nodeList (__Global* data)
 
 void _create (__Global* data)
 {
+  strncpy(data->cmd, "create", 6);
   _nodeList(data);
 }
 
 void _match (__Global* data)
 {
+  strncpy(data->cmd, "match", 5);
   _nodeList(data);
   _setList(data);
   _return(data);
@@ -255,13 +275,15 @@ void getsym (__Global* data)
   data->tok = token(data->prog);
 }
 
-void parse (unsigned char** p) 
+void parse (unsigned char* p) 
 {
   __Global data;
 
-  data.prog = p;
+  data.prog = &p;
   data.tok = NULL;
   data.cache = NULL;
+
+  memset(data.cmd, 0, 10);
 
   getsym(&data);
   _expr(&data);
