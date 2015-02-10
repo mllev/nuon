@@ -199,7 +199,14 @@ void _nodeList (__Global* data)
   }
 
   expect(data, lbrack);
+
+  if ( accept(data, ident) ) {
+    // this identifier represents the relationship
+  }
+
+  expect(data, colon);
   expect(data, ident);
+
   expect(data, rbrack);
   expect(data, dash);
   expect(data, grthan);

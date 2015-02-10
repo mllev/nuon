@@ -50,8 +50,10 @@ Node ::=
 NodeList ::= 
     Node 
   | Node "," NodeList
-  | Node "-[" ident "]->" Node
-  | Node "-[" ident "]->" Node "," NodeList
+  | Node "-[" ":" ident "]->" Node
+  | Node "-[" ident ":" ident "]->" Node
+  | Node "-[" ":" ident "]->" Node "," NodeList
+  | Node "-[" ident ":" ident "]->" Node "," NodeList
 
 Create ::=
     "create" NodeList
@@ -86,9 +88,9 @@ Expr ::=
 
 *** Examples *** HEAVILY inspired by Neo4j's Cypher query language ***
 
-CREATE (p:Person {"name": "Matt"}), (q:Person {"name": "Jordan"}), (p) -[knows]-> (q)
+CREATE (p:Person {"name": "Matt"}), (q:Person {"name": "Jordan"}), (p) -[k:knows]-> (q)
 
-MATCH (p:Person {"name": "Matt"}) -[knows]-> (q) SET p.name = "hello" return p, q
+MATCH (p:Person {"name": "Matt"}) -[:knows]-> (q) SET p.name = "jim" SET q.age = "25" return p, q
 
 ***************/
 
