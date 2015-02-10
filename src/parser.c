@@ -34,6 +34,7 @@
 
 #include "token.h"
 #include "parser.h"
+#include "exec.h"
 
 typedef struct {
   /* current token */
@@ -46,6 +47,12 @@ typedef struct {
 
   /* current data */
   unsigned char* cache;
+  /* previous data */
+  unsigned char* prev;
+
+  /* for execution */
+  node_data_t *node_r, *node_c;
+  edge_data_t *edge_r, *edge_c;
 
 } __Global;
 
@@ -87,6 +94,9 @@ int accept (__Global* data, Symbol s)
 {
   if ( data->tok && data->tok->sym == s ) {
     if ( data->tok->data ) {
+      if ( data->cache ) {
+        data->prev = data->cache;
+      }
       data->cache = data->tok->data;
     }
     getsym(data);
@@ -116,14 +126,19 @@ void _edge (__Global* data)
   expect(data, lbrack);
 
   if ( accept(data, ident) ) {
-    // this identifier represents the relationship
+    /* createEdgeAndSetCurrent(ident: data->cache) */
+  } else {
+    /* createEdgeAndSetCurrent(ident: null) */
   }
 
   expect(data, colon);
   expect(data, ident);
+   /* setLabelOnCurrentEdge(label: data->cache) */
   expect(data, rbrack);
   expect(data, dash);
   expect(data, grthan);
+
+  /* setCurrentNodeAsLeftNodeToCurrentEdge() */
 }
 
 void _identList (__Global* data)
@@ -185,6 +200,8 @@ void _keyValueList (__Global* data)
   expect(data, colon);
   expect(data, string);
 
+  /* addPropertyToCurrentNode(key: data->prev, val: data->cache) */
+
   if ( accept(data, comma) ) {
     _keyValueList(data);
   }
@@ -203,7 +220,11 @@ void _type (__Global* data)
 
   if ( accept(data, colon) ) {
     expect(data, ident);
+    /* addNodeAndSetCurrent(ident: data->prev) */
+    /* addLabelToCurrent(label: data->cache) */
     _data(data);
+  } else {
+    /* setCurrentNode(ident: data->cache) */
   }
 }
 
@@ -228,8 +249,9 @@ void _nodeList (__Global* data)
   }
 
   _edge(data);
-
   _node(data);
+
+  /* setCurrentNodeAsRightNodeToCurrentEdge() */
 
   if ( accept(data, comma) ) {
     _nodeList(data);
@@ -254,12 +276,10 @@ void _expr (__Global* data)
 {
   if ( accept(data, create) ) {
     _create(data);
-    _expr(data); /* comment this out to eliminate injection */
   }
 
   else if ( accept(data, match) ) {
     _match(data);
-    _expr(data); /* this too */
   }
 
   else if ( data->tok && data->tok->data ) {
@@ -282,6 +302,11 @@ void parse (unsigned char* p)
   data.prog = &p;
   data.tok = NULL;
   data.cache = NULL;
+  data.prev = NULL;
+  data.node_r = NULL;
+  data.node_c = NULL;
+  data.edge_r = NULL;
+  data.edge_c = NULL;
 
   memset(data.cmd, 0, 10);
 

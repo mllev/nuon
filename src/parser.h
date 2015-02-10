@@ -95,6 +95,8 @@ CREATE (p:Person {"name": "Matt"}), (q:Person {"name": "Jordan"}), (p) -[k:knows
 
 MATCH (p:Person {"name": "Matt"}) -[:knows]-> (q) SET p.name = "jim" SET q.age = "25" SET (p) -[:hates]-> (q) return p, q
 
+***** opcodes *****
+
 ***************/
 
 void parse (unsigned char*);

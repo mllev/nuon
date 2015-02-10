@@ -1,4 +1,4 @@
-/* nuon
+/* exec.h
  *
  * Copyright (c) 2015, Matthew Levenstein
  * All rights reserved.
@@ -28,32 +28,55 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#ifndef _EXEC_H
+#define _EXEC_H
 
-#include "query.h"
+typedef struct node_data node_data_t;
+typedef struct edge_data edge_data_t;
 
-void teststr(char * str);
-void query_parserTest (void);
+struct node_data {
+  /* identifier */
+  unsigned char ident[512];
 
-void query_parserTest (void)
-{
-  while ( 1 ) {
-    printf("nuon> ");
-    query_exec(query_readline(stdin));
-  }
-}
+  /* node label */
+  unsigned char label[512];
 
-void teststr(char * str)
-{
-  static int i = 0;
-  sprintf(str, "%d", ++i);
-}
+  /* properties */
+  unsigned char keys[20][512];
+  unsigned char vals[20][512];
 
-int main (void)
-{
-  query_parserTest();
-  return 0;
-}
+  int propcount;
+
+  /* linked list */
+  node_data_t* next;
+
+  /* also, at somepoint store a pointer to the actual node in the graph */
+};
+
+struct edge_data {
+  /* identifier */
+  unsigned char ident[512];
+
+  /* edge label */
+  unsigned char label[512];
+
+  node_data_t *node_l, *node_r;
+
+  /* linked list */
+  edge_data_t* next;
+};
+
+/*** execution ****
+*******************/
+
+/* addNodeAndSetCurrent(ident: data->prev) */
+/* addLabelToCurrent(label: data->cache) */
+/* setCurrentNode(ident: data->cache) */
+/* addPropertyToCurrentNode(key: data->prev, val: data->cache) */
+/* createEdgeAndSetCurrent(ident: null) */
+/* createEdgeAndSetCurrent(ident: data->cache) */
+/* setCurrentNodeAsRightNodeToCurrentEdge() */
+/* setLabelOnCurrentEdge(label: data->cache) */
+/* setCurrentNodeAsLeftNodeToCurrentEdge() */
+
+#endif
