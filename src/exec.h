@@ -66,17 +66,20 @@ struct edge_data {
   edge_data_t* next;
 };
 
-/*** execution ****
-*******************/
+/* node api */
+node_data_t* exec_addNode(node_data_t*, unsigned char*);
+void exec_addLabelToNode(node_data_t*, unsigned char*);
+node_data_t* exec_findNode(node_data_t*, unsigned char*);
+void exec_addProperty(node_data_t*, unsigned char*, unsigned char*);
 
-/* addNodeAndSetCurrent(ident: data->prev) */
-/* addLabelToCurrent(label: data->cache) */
-/* setCurrentNode(ident: data->cache) */
-/* addPropertyToCurrentNode(key: data->prev, val: data->cache) */
-/* createEdgeAndSetCurrent(ident: null) */
-/* createEdgeAndSetCurrent(ident: data->cache) */
-/* setCurrentNodeAsRightNodeToCurrentEdge() */
-/* setLabelOnCurrentEdge(label: data->cache) */
-/* setCurrentNodeAsLeftNodeToCurrentEdge() */
+/* relationship api */
+edge_data_t* exec_addEdge(edge_data_t*, unsigned char*);
+void exec_setRightNode(node_data_t*, edge_data_t*);
+void exec_setLeftNode(node_data_t*, edge_data_t*);
+void exec_addLabelToEdge(edge_data_t*, unsigned char*);
+
+/* execute commands */
+void exec_create (node_data_t*, edge_data_t*);
+void exec_match (node_data_t*, edge_data_t*);
 
 #endif

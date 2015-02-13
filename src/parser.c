@@ -51,8 +51,8 @@ typedef struct {
   unsigned char* prev;
 
   /* for execution */
-  node_data_t *node_r, *node_c;
-  edge_data_t *edge_r, *edge_c;
+  node_data_t *node_root, *node_curr;
+  edge_data_t *edge_root, *edge_curr;
 
 } __Global;
 
@@ -127,18 +127,32 @@ void _edge (__Global* data)
 
   if ( accept(data, ident) ) {
     /* createEdgeAndSetCurrent(ident: data->cache) */
+    data->edge_curr = exec_addEdge(data->edge_root, data->cache);
+    /***/
   } else {
     /* createEdgeAndSetCurrent(ident: null) */
+    data->edge_curr = exec_addEdge(data->edge_root, NULL);
+    /***/
   }
+
+  /* because the new edge created may be the first edge created */
+  if ( data->edge_curr && !data->edge_root ) {
+    data->edge_root = data->edge_curr;
+  }
+  /***/
 
   expect(data, colon);
   expect(data, ident);
    /* setLabelOnCurrentEdge(label: data->cache) */
+  exec_addLabelToEdge(data->edge_curr, data->cache);
+  /***/
   expect(data, rbrack);
   expect(data, dash);
   expect(data, grthan);
 
   /* setCurrentNodeAsLeftNodeToCurrentEdge() */
+  exec_setLeftNode(data->node_curr, data->edge_curr);
+  /***/
 }
 
 void _identList (__Global* data)
@@ -201,6 +215,8 @@ void _keyValueList (__Global* data)
   expect(data, string);
 
   /* addPropertyToCurrentNode(key: data->prev, val: data->cache) */
+  exec_addProperty(data->node_curr, data->prev, data->cache);
+  /***/
 
   if ( accept(data, comma) ) {
     _keyValueList(data);
@@ -222,9 +238,21 @@ void _type (__Global* data)
     expect(data, ident);
     /* addNodeAndSetCurrent(ident: data->prev) */
     /* addLabelToCurrent(label: data->cache) */
+    data->node_curr = exec_addNode(data->node_root, data->prev);
+    exec_addLabelToNode(data->node_curr, data->cache);
+    /* because the new node created may be the first node created */
+    if ( data->node_curr && !data->node_root ) {
+      data->node_root = data->node_curr;
+    }
+    /***/
     _data(data);
   } else {
     /* setCurrentNode(ident: data->cache) */
+    data->node_curr = exec_findNode(data->node_root, data->cache);
+    if ( !data->node_curr ) {
+      error("unidentified variable", (const char *)data->cache);
+    }
+    /***/
   }
 }
 
@@ -252,6 +280,8 @@ void _nodeList (__Global* data)
   _node(data);
 
   /* setCurrentNodeAsRightNodeToCurrentEdge() */
+  exec_setRightNode(data->node_curr, data->edge_curr);
+  /***/
 
   if ( accept(data, comma) ) {
     _nodeList(data);
@@ -276,6 +306,7 @@ void _expr (__Global* data)
 {
   if ( accept(data, create) ) {
     _create(data);
+    exec_create(data->node_root, data->edge_root);
   }
 
   else if ( accept(data, match) ) {
@@ -303,10 +334,10 @@ void parse (unsigned char* p)
   data.tok = NULL;
   data.cache = NULL;
   data.prev = NULL;
-  data.node_r = NULL;
-  data.node_c = NULL;
-  data.edge_r = NULL;
-  data.edge_c = NULL;
+  data.node_root = NULL;
+  data.node_curr = NULL;
+  data.edge_root = NULL;
+  data.edge_curr = NULL;
 
   memset(data.cmd, 0, 10);
 
