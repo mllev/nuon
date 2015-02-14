@@ -41,12 +41,14 @@ typedef struct vertex Vertex;
 typedef struct property Property;
 typedef struct edge Edge;
 
+typedef unsigned long word_t;
+
 struct graph {
-  /* store graph metadata here */
   map_t* vertices;
 };
 
 struct vertex {
+  word_t idx;
   Edge* edges;
   Property* properties;
 };
