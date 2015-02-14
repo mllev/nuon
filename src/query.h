@@ -31,7 +31,9 @@
 #ifndef _QUERY_H
 #define _QUERY_H
 
-void query_exec (const char *);
-const char* query_readline (FILE*);
+#include "graph.h"
+
+void query_exec (Graph*, const char *);
+char* query_readline (FILE*);
 
 #endif

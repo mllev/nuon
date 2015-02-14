@@ -76,7 +76,7 @@ void _node (__Global*);
 void _type (__Global*);
 void _data (__Global*);
 void _keyValueList(__Global*);
-void _expr (__Global*);
+void _expr (Graph*, __Global*);
 void _identList (__Global*);
 void _return (__Global*);
 void _set (__Global*);
@@ -302,11 +302,11 @@ void _match (__Global* data)
   _return(data);
 }
 
-void _expr (__Global* data)
+void _expr (Graph* g, __Global* data)
 {
   if ( accept(data, create) ) {
     _create(data);
-    exec_create(data->node_root, data->edge_root);
+    exec_create(g, data->node_root, data->edge_root);
   }
 
   else if ( accept(data, match) ) {
@@ -326,7 +326,7 @@ void getsym (__Global* data)
   data->tok = token(data->prog);
 }
 
-void parse (unsigned char* p) 
+void parse (Graph* g, unsigned char* p) 
 {
   __Global data;
 
@@ -342,5 +342,5 @@ void parse (unsigned char* p)
   memset(data.cmd, 0, 10);
 
   getsym(&data);
-  _expr(&data);
+  _expr(g, &data);
 }

@@ -36,7 +36,7 @@
 #include "token.h"
 #include "parser.h"
 
-const char* query_readline (FILE* f)
+char* query_readline (FILE* f)
 {
   unsigned char* buf = NULL;
   int c = 0, i = 0, bufsize = 10;
@@ -54,10 +54,10 @@ const char* query_readline (FILE* f)
     }
   }
 
-  return (const char*)buf;
+  return (char *)buf;
 }
 
-void query_exec (const char* program)
+void query_exec (Graph* g, const char* program)
 {
-  parse((unsigned char *)program);
+  parse(g, (unsigned char *)program);
 }

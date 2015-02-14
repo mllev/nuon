@@ -31,6 +31,8 @@
 #ifndef _EXEC_H
 #define _EXEC_H
 
+#include "graph.h"
+
 typedef struct node_data node_data_t;
 typedef struct edge_data edge_data_t;
 
@@ -50,7 +52,8 @@ struct node_data {
   /* linked list */
   node_data_t* next;
 
-  /* also, at somepoint store a pointer to the actual node in the graph */
+  /* pointer to node in graph */
+  Vertex* ptr;
 };
 
 struct edge_data {
@@ -79,7 +82,7 @@ void exec_setLeftNode(node_data_t*, edge_data_t*);
 void exec_addLabelToEdge(edge_data_t*, unsigned char*);
 
 /* execute commands */
-void exec_create (node_data_t*, edge_data_t*);
-void exec_match (node_data_t*, edge_data_t*);
+void exec_create (Graph*, node_data_t*, edge_data_t*);
+void exec_match (Graph*, node_data_t*, edge_data_t*);
 
 #endif

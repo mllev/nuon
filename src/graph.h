@@ -54,30 +54,27 @@ struct vertex {
 };
 
 struct edge {
-  void* label;
-  int ll;
+  unsigned char* label;
   Vertex* to;
   Vertex* from;
   Edge* next;
 };
 
 struct property {
-  void* key;
-  void* val;
-  int kl;
-  int vl;
+  unsigned char* key;
+  unsigned char* val;
   Property* next;
 };
 
 Graph* graph_init (uint64);
-Vertex* graph_setVertex (Graph*, void*, Vertex*);
-Vertex* graph_getVertex (Graph*, void*);
+Vertex* graph_setVertex (Graph*, unsigned char*, Vertex*);
+Vertex* graph_getVertex (Graph*, unsigned char*);
 Vertex* graph_vertexInit (void);
-void graph_removeVertex (Graph*, void*);
-void graph_vertexAddEdge (Vertex*, Vertex*, void*);
-void graph_vertexRemoveEdge (Vertex*, void*);
-void graph_vertexSetProperty (Vertex*, void*, void*);
-void* graph_vertexGetProperty (Vertex*, void*);
-void graph_vertexRemoveProperty (Vertex*, void*);
+void graph_removeVertex (Graph*, unsigned char*);
+void graph_vertexAddEdge (Vertex*, Vertex*, unsigned char*);
+void graph_vertexRemoveEdge (Vertex*, unsigned char*);
+void graph_vertexSetProperty (Vertex*, unsigned char*, unsigned char*);
+unsigned char* graph_vertexGetProperty (Vertex*, unsigned char*);
+void graph_vertexRemoveProperty (Vertex*, unsigned char*);
 
 #endif

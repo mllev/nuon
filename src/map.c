@@ -53,6 +53,17 @@ map_t* map_init ()
   return m;
 }
 
+static inline int strncmpsafe (const char* k0, unsigned char* k1)
+{
+  int kl0, kl1, kl;
+
+  kl0 = strlen(k0);
+  kl1 = strlen((const char*)k1);
+  kl = (kl0 > kl1 ? kl0 : kl1);
+  
+  return strncmp((const char*)k0, (const char*)k1, kl);
+}
+
 /* initialize a node */
 map_node_t* map_node_init (int height, const char* k, void* v)
 {
@@ -97,7 +108,7 @@ int map_remove (map_t* m, const char* k)
   map_node_t* del;
 
   while ( --h >= 0 ) {
-    while ( iter->next[h] && cmp(k, iter->next[h]->key, klen) < 0 ) {
+    while ( iter->next[h] && strncmpsafe(k, iter->next[h]->key) < 0 ) {
       iter = iter->next[h];
     }
 
@@ -106,11 +117,11 @@ int map_remove (map_t* m, const char* k)
 
   del = update[0]->next[0];
 
-  if ( iter->next[0] && !cmp(k, iter->next[0]->key, klen) ) {
+  if ( iter->next[0] && !strncmpsafe(k, iter->next[0]->key) ) {
     h = m->height;
 
     while ( i < h ) {
-      if ( cmp(k, update[i]->next[i]->key, klen) ) {
+      if ( strncmpsafe(k, update[i]->next[i]->key) ) {
         break;
       }
 
@@ -137,14 +148,14 @@ int map_set (map_t* m, const char* k, void* v)
   map_node_t* n;
 
   while ( --h >= 0 ) {
-    while ( iter->next[h] && cmp(k, iter->next[h]->key, klen) < 0 ) {
+    while ( iter->next[h] && strncmpsafe(k, iter->next[h]->key) < 0 ) {
       iter = iter->next[h];
     }
 
     update[h] = iter;
   }
 
-  if ( iter->next[0] && !cmp(k, iter->next[0]->key, klen) ) {
+  if ( iter->next[0] && !strncmpsafe(k, iter->next[0]->key) ) {
     free(iter->next[0]->data);
     iter->next[0]->data = v;
     return 1;
@@ -178,12 +189,12 @@ void* map_get (map_t* m, const char* k)
   int klen = strlen(k);
 
   while (--h >= 0) {
-    while ( iter->next[h] && cmp(k, iter->next[h]->key, klen) < 0 ) {
+    while ( iter->next[h] && strncmpsafe(k, iter->next[h]->key) < 0 ) {
       iter = iter->next[h];
     }
   }
 
-  if ( !iter->next[0] || cmp(k, iter->next[0]->key, klen) != 0 ) {
+  if ( !iter->next[0] || strncmpsafe(k, iter->next[0]->key) != 0 ) {
     return NULL;
   }
 

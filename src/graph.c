@@ -34,12 +34,21 @@
 
 #include "graph.h"
 
-Property* property_init (void*, void*);
+Property* property_init (unsigned char*, unsigned char*);
 void property_destroy (Property*);
 void vertex_destroy (Vertex*);
-Edge* edge_init (Vertex*, Vertex*, void*);
-Vertex* vertex_dup (Vertex*);
+Edge* edge_init (Vertex*, Vertex*, unsigned char*);
 
+static inline int strncmpsafe (const char* k0, unsigned char* k1)
+{
+  int kl0, kl1, kl;
+
+  kl0 = strlen(k0);
+  kl1 = strlen((const char*)k1);
+  kl = (kl0 > kl1 ? kl0 : kl1);
+  
+  return strncmp((const char*)k0, (const char*)k1, kl);
+}
 
 Graph* graph_init (uint64 size)
 {
@@ -67,44 +76,31 @@ Vertex* graph_vertexInit (void)
     return NULL;
   }
 
+  v->idx = 0;
   v->edges = NULL;
   v->properties = NULL;
 
   return v;
 }
 
-Vertex* vertex_dup (Vertex* vertex)
-{
-  Vertex* v = malloc(sizeof(Vertex));
-
-  if ( !v ) {
-    return NULL;
-  }
-
-  v->edges = vertex->edges;
-  v->properties = vertex->properties;
-
-  return v;
-}
-
-Property* property_init (void* key, void* val)
+Property* property_init (unsigned char* key, unsigned char* val)
 {
   Property* p = malloc(sizeof(Property));
-  int kl = strlen((char *)key);
-  int vl = strlen((char *)val);
+  int kl = strlen((const char *)key);
+  int vl = strlen((const char *)val);
 
   if ( !p ) {
     return NULL;
   }
 
-  p->key = malloc(kl);
+  p->key = malloc(kl + 1);
 
   if ( !p->key ) {
     free(p);
     return NULL;
   }
 
-  p->val = malloc(vl);
+  p->val = malloc(vl + 1);
 
   if ( !p->val ) {
     free(p->key);
@@ -112,38 +108,39 @@ Property* property_init (void* key, void* val)
     return NULL;
   }
 
-  strncpy(p->key, key, kl);
-  strncpy(p->val, val, vl);
+  strncpy((char *)p->key, (char *)key, kl);
+  strncpy((char *)p->val, (char *)val, vl);
 
-  p->kl = kl;
-  p->vl = vl;
+  p->key[kl] = 0;
+  p->val[vl] = 0;
 
   p->next = NULL;
 
   return p;
 }
 
-Edge* edge_init (Vertex* from, Vertex* to, void* label)
+Edge* edge_init (Vertex* from, Vertex* to, unsigned char* label)
 {
   Edge* e = malloc(sizeof(Edge));
-  int ll = strlen((char *)label);
+  int len = strlen((const char *)label);
 
   if ( !e ) {
     return NULL;
   }
 
-  e->label = malloc(ll);
+  e->label = malloc(len + 1);
 
   if ( !e->label ) {
     free(e);
     return NULL;
   }
 
-  strncpy(e->label, label, ll);
-  
-  e->ll = ll;
+  strncpy((char *)e->label, (char *)label, len);
+  e->label[len] = 0;
+
   e->from = from;
   e->to = to;
+  e->next = NULL;
 
   return e;
 }
@@ -194,7 +191,7 @@ void vertex_destroy (Vertex* vertex)
   free(vertex);
 }
 
-Vertex* graph_setVertex (Graph* graph, void* key, Vertex* vertex)
+Vertex* graph_setVertex (Graph* graph, unsigned char* key, Vertex* vertex)
 {
   Vertex* v;
 
@@ -204,14 +201,14 @@ Vertex* graph_setVertex (Graph* graph, void* key, Vertex* vertex)
     v = graph_vertexInit();
   }
 
-  map_set(graph->vertices, key, v);
+  map_set(graph->vertices, (const char *)key, v);
 
   return v;
 }
 
-Vertex* graph_getVertex (Graph* graph, void* key)
+Vertex* graph_getVertex (Graph* graph, unsigned char* key)
 {
-  Vertex* v = (Vertex *)map_get(graph->vertices, key);
+  Vertex* v = (Vertex *)map_get(graph->vertices, (const char *)key);
   
   if ( v ) {
     return v;
@@ -220,12 +217,12 @@ Vertex* graph_getVertex (Graph* graph, void* key)
   return NULL;
 }
 
-void graph_removeVertex (Graph* graph, void* key)
+void graph_removeVertex (Graph* graph, unsigned char* key)
 {
-  map_remove(graph->vertices, key);
+  map_remove(graph->vertices, (const char*)key);
 }
 
-void graph_vertexAddEdge (Vertex* from, Vertex* to, void* label)
+void graph_vertexAddEdge (Vertex* from, Vertex* to, unsigned char* label)
 {
   Edge* iter = from->edges;
 
@@ -242,17 +239,18 @@ void graph_vertexAddEdge (Vertex* from, Vertex* to, void* label)
   return;
 }
 
-void graph_vertexRemoveEdge (Vertex* vertex, void* label)
+void graph_vertexRemoveEdge (Vertex* vertex, unsigned char* label)
 {
   /* remove either a single instance of the edge, or all the instances */
   /* maybe give the option, or have the user specify a count */
   return;
 }
 
-void graph_vertexSetProperty (Vertex* vertex, void* key, void* val)
+void graph_vertexSetProperty (Vertex* vertex, unsigned char* key, unsigned char* val)
 {
   Property* iter = vertex->properties;
   int exists = 0;
+  int kl = strlen((const char *)key);
 
   if ( !iter ) {
     vertex->properties = property_init(key, val);
@@ -260,7 +258,7 @@ void graph_vertexSetProperty (Vertex* vertex, void* key, void* val)
   }
 
   while (iter->next) {
-    if (!cmp(iter->next->key, key, iter->next->kl)) {
+    if (!strncmpsafe((const char *)iter->next->key, key)) {
       exists = 1;
       break;
     }
@@ -278,12 +276,13 @@ void graph_vertexSetProperty (Vertex* vertex, void* key, void* val)
   return;
 }
 
-void* graph_vertexGetProperty (Vertex* vertex, void* key)
+unsigned char* graph_vertexGetProperty (Vertex* vertex, unsigned char* key)
 {
   Property* iter = vertex->properties;
+  int kl = strlen((const char *)key);
 
   while ( iter ) {
-    if (!cmp(iter->key, key, iter->kl)) {
+    if (!strncmpsafe((const char *)iter->key, key)) {
       break;
     }
     iter = iter->next;
@@ -296,9 +295,10 @@ void* graph_vertexGetProperty (Vertex* vertex, void* key)
   return NULL;
 }
 
-void graph_vertexRemoveProperty (Vertex* vertex, void* key)
+void graph_vertexRemoveProperty (Vertex* vertex, unsigned char* key)
 {
   Property *iter, *del = NULL;
+  int kl = strlen((const char *)key);
 
   if ( !vertex->properties ) {
     return;
@@ -307,7 +307,7 @@ void graph_vertexRemoveProperty (Vertex* vertex, void* key)
   iter = vertex->properties;
 
   /* if it's the first one to be deleted */
-  if ( !cmp(iter->key, key, iter->kl)) {
+  if ( !strncmpsafe((const char *)iter->key, key)) {
     del = iter;
     vertex->properties = iter->next;
     property_destroy(del);
@@ -315,7 +315,7 @@ void graph_vertexRemoveProperty (Vertex* vertex, void* key)
   }
 
   while ( iter->next ) {
-    if ( !cmp(iter->next->key, key, iter->kl) ) {
+    if ( !strncmpsafe((const char*)iter->next->key, key) ) {
       break;
     }
     iter = iter->next;

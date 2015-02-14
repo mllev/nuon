@@ -34,15 +34,21 @@
 #include <time.h>
 
 #include "query.h"
+#include "graph.h"
 
 void teststr(char * str);
 void query_parserTest (void);
 
 void query_parserTest (void)
 {
+  Graph* g = graph_init(100000);
+  char* str;
   while ( 1 ) {
     printf("nuon> ");
-    query_exec(query_readline(stdin));
+    str = query_readline(stdin);
+    query_exec(g, (const char *)str);
+    free(str);
+    str = NULL;
   }
 }
 

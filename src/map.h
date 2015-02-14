@@ -33,8 +33,6 @@
 
 #define MAX 32
 
-#define cmp(x, y, z) strncmp((const char*)x, (const char *)y, z)
-
 typedef struct map_node map_node_t;
 typedef struct map map_t;
 

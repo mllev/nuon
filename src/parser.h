@@ -31,6 +31,8 @@
 #ifndef _PARSER_H
 #define _PARSER_H
 
+#include "graph.h"
+
 /*** Grammar ***
 
 KeyValueList ::= 
@@ -99,6 +101,6 @@ MATCH (p:Person {"name": "Matt"}) -[:knows]-> (q) SET p.name = "jim" SET q.age =
 
 ***************/
 
-void parse (unsigned char*);
+void parse (Graph*, unsigned char*);
 
 #endif

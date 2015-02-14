@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 #include "exec.h"
-#include "graph.h"
 
 static inline int strlensafe (unsigned char *str)
 {
@@ -119,36 +118,50 @@ void exec_addLabelToEdge(edge_data_t* edge, unsigned char* label)
   edge->label[len] = 0;
 }
 
-void exec_create (node_data_t* root, edge_data_t* edges)
+void exec_create (Graph* g, node_data_t* root, edge_data_t* edges)
 {
+  Vertex *type, *node;
   node_data_t* node_iter = root;
   edge_data_t* edge_iter = edges;
-  int count = 0;
+  int count = 0, id;
 
-  while ( node_iter ) { 
-    printf("---------------------------------\n");
-    printf("New node: %s\n", node_iter->label);
+  while ( node_iter ) {
+    char key[256];
+    type = graph_getVertex(g, node_iter->label);
+
+    if ( !type ) {
+      type = graph_setVertex(g, node_iter->label, NULL);
+    }
+
+    id = type->idx++;
+
+    sprintf(key, "%s:%d", node_iter->label, id);
+
+    node = graph_setVertex(g, (unsigned char*)key, NULL);
+    node_iter->ptr = node;
+    graph_vertexAddEdge(type, node, (unsigned char*)"member");
     count = node_iter->propcount;
+
     while (count) {
       count--;
-      printf("\tproperty: %s, %s\n", node_iter->keys[count], node_iter->vals[count]);
+      graph_vertexSetProperty(node, node_iter->keys[count], node_iter->vals[count]);
     }
-    printf("\n");
+
+    node = NULL;
+    type = NULL;
+
     node_iter = node_iter->next;
   }
 
   while ( edge_iter ) { 
-    printf("---------------------------------\n");
-    printf("New edge: %s\n", edge_iter->label);
-    printf("\tleft node: %s\n", edge_iter->node_l->label);
-    printf("\tright node: %s\n", edge_iter->node_r->label);
+    graph_vertexAddEdge(edge_iter->node_l->ptr, edge_iter->node_r->ptr, edge_iter->label);
     edge_iter = edge_iter->next;
-    printf("\n");
   }
+
   return;
 }
 
-void exec_match (node_data_t* root, edge_data_t* edges)
+void exec_match (Graph* g, node_data_t* root, edge_data_t* edges)
 {
   return;
 }
