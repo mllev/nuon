@@ -82,7 +82,6 @@ void exec_setLeftNode(node_data_t*, edge_data_t*);
 void exec_addLabelToEdge(edge_data_t*, unsigned char*);
 
 /* execute commands */
-void exec_create (Graph*, node_data_t*, edge_data_t*);
-void exec_match (Graph*, node_data_t*, edge_data_t*);
+void exec_cmd (Graph*, char*, node_data_t*, edge_data_t*);
 
 #endif

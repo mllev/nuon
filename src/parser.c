@@ -67,8 +67,8 @@ const char* symstr[] = {
 };
 
 void getsym (__Global*);
+void setcmd (__Global*, const char* cmd);
 void error (const char *, const char *);
-
 void _create (__Global*);
 void _match (__Global*);
 void _nodeList (__Global*);
@@ -88,6 +88,13 @@ void error (const char* err, const char* s)
 {
   fprintf(stderr, "error: %s %s\n", err, s);
   exit(1);
+}
+
+void setcmd (__Global* data, const char* cmd)
+{
+  int len = strlen(cmd);
+  strncpy(data->cmd, cmd, len);
+  data->cmd[len] = 0;
 }
 
 int accept (__Global* data, Symbol s)
@@ -290,13 +297,13 @@ void _nodeList (__Global* data)
 
 void _create (__Global* data)
 {
-  strncpy(data->cmd, "create", 6);
+  setcmd(data, "create");
   _nodeList(data);
 }
 
 void _match (__Global* data)
 {
-  strncpy(data->cmd, "match", 5);
+  setcmd(data, "match");
   _nodeList(data);
   _setList(data);
   _return(data);
@@ -306,7 +313,6 @@ void _expr (Graph* g, __Global* data)
 {
   if ( accept(data, create) ) {
     _create(data);
-    exec_create(g, data->node_root, data->edge_root);
   }
 
   else if ( accept(data, match) ) {
@@ -316,6 +322,8 @@ void _expr (Graph* g, __Global* data)
   else if ( data->tok && data->tok->data ) {
     fprintf(stderr, "error: unknown command %s\n", (const char *)data->tok->data);
   }
+
+  exec_cmd(g, data->cmd, data->node_root, data->edge_root);
 }
 
 void getsym (__Global* data)

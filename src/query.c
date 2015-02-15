@@ -54,6 +54,8 @@ char* query_readline (FILE* f)
     }
   }
 
+  buf[i] = 0;
+
   return (char *)buf;
 }
 

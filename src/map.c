@@ -82,7 +82,7 @@ map_node_t* map_node_init (int height, const char* k, void* v)
     }
 
     if ( n->key ) {
-      n->key[klen] = 0; /* no need to memset, just null terminate */
+      n->key[klen] = 0; 
       memcpy(n->key, k, klen);
     }
 

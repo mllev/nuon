@@ -118,12 +118,29 @@ void exec_addLabelToEdge(edge_data_t* edge, unsigned char* label)
   edge->label[len] = 0;
 }
 
-void exec_create (Graph* g, node_data_t* root, edge_data_t* edges)
+void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges)
 {
   Vertex *type, *node;
+  VertexContainer* returnData;
+  Property* prop_iter;
   node_data_t* node_iter = root;
   edge_data_t* edge_iter = edges;
   int count = 0, id;
+
+  if ( !strncmp(cmd, "match", 5) ) {
+    returnData = graph_getVertices(g, root->label, root->keys[0], root->vals[0]);
+    while ( returnData ) {
+      printf("{\n");
+      prop_iter = returnData->vertex->properties;
+      while ( prop_iter ) {
+        printf("  %s : %s\n", prop_iter->key, prop_iter->val);
+        prop_iter = prop_iter->next;
+      }
+      printf("}\n");
+      returnData = returnData->next;
+    }
+    return;
+  }
 
   while ( node_iter ) {
     char key[256];
@@ -158,10 +175,5 @@ void exec_create (Graph* g, node_data_t* root, edge_data_t* edges)
     edge_iter = edge_iter->next;
   }
 
-  return;
-}
-
-void exec_match (Graph* g, node_data_t* root, edge_data_t* edges)
-{
   return;
 }

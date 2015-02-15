@@ -38,6 +38,7 @@ Property* property_init (unsigned char*, unsigned char*);
 void property_destroy (Property*);
 void vertex_destroy (Vertex*);
 Edge* edge_init (Vertex*, Vertex*, unsigned char*);
+VertexContainer* graph_vertexContainerInit (Vertex* vertex);
 
 static inline int strncmpsafe (const char* k0, unsigned char* k1)
 {
@@ -328,4 +329,75 @@ void graph_vertexRemoveProperty (Vertex* vertex, unsigned char* key)
   }
 
   return;
+}
+
+VertexContainer* graph_vertexContainerInit (Vertex* vertex)
+{
+  if ( !vertex->properties ) {
+    return NULL;
+  }
+  
+  VertexContainer* v = malloc(sizeof(VertexContainer));
+  v->vertex = vertex;
+  v->next = NULL;
+  return v;
+}
+
+VertexContainer* graph_getVertices (Graph* g, unsigned char* label, unsigned char* key, unsigned char* val)
+{
+  VertexContainer *head = NULL, *tail = NULL;
+  map_node_t* ptr = g->vertices->head;
+  Vertex* type;
+  Edge* edge_iter;
+  unsigned char* prop = NULL;
+
+  if ( label ) {
+    type = graph_getVertex(g, label);
+    if ( !type ) {
+      return NULL;
+    }
+    edge_iter = type->edges;
+    while ( edge_iter ) {
+      if ( prop ) {
+        free(prop);
+        prop = NULL;
+      }
+      if ( key ) {
+        prop = graph_vertexGetProperty(edge_iter->to, key);
+      }
+      if ( !key || (prop && !strncmp((const char *)prop, (const char*)val, strlen((const char *)val))) ) {
+        if ( !head ) {
+          head = graph_vertexContainerInit(edge_iter->to);
+          tail = head;
+        } else {
+          tail->next = graph_vertexContainerInit(edge_iter->to);
+          tail = tail->next;
+        }
+      }
+      edge_iter = edge_iter->next;
+    } 
+  } else {
+    while ( ptr ) {
+      if ( prop ) {
+          free(prop);
+          prop = NULL;
+        }
+      if ( ptr->data ) {
+        if ( key ) {
+          prop = graph_vertexGetProperty(ptr->data, key);
+        }
+        if ( !key || (prop && !strncmp((const char *)prop, (const char*)val, strlen((const char *)val))) ) {
+          if ( !head ) {
+            head = graph_vertexContainerInit(ptr->data);
+            tail = head;
+          } else {
+            tail->next = graph_vertexContainerInit(ptr->data);
+            tail = tail->next;
+          }
+        }
+      }
+      ptr = ptr->next[0];
+    }
+  } 
+  return head;
 }

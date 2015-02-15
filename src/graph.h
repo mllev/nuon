@@ -38,6 +38,7 @@
 
 typedef struct graph Graph;
 typedef struct vertex Vertex;
+typedef struct vertexContainer VertexContainer;
 typedef struct property Property;
 typedef struct edge Edge;
 
@@ -51,6 +52,11 @@ struct vertex {
   word_t idx;
   Edge* edges;
   Property* properties;
+};
+
+struct vertexContainer {
+  Vertex* vertex;
+  VertexContainer* next;
 };
 
 struct edge {
@@ -70,11 +76,13 @@ Graph* graph_init (uint64);
 Vertex* graph_setVertex (Graph*, unsigned char*, Vertex*);
 Vertex* graph_getVertex (Graph*, unsigned char*);
 Vertex* graph_vertexInit (void);
+VertexContainer* graph_getVertices (Graph*, unsigned char*, unsigned char*, unsigned char*);
 void graph_removeVertex (Graph*, unsigned char*);
 void graph_vertexAddEdge (Vertex*, Vertex*, unsigned char*);
 void graph_vertexRemoveEdge (Vertex*, unsigned char*);
 void graph_vertexSetProperty (Vertex*, unsigned char*, unsigned char*);
 unsigned char* graph_vertexGetProperty (Vertex*, unsigned char*);
 void graph_vertexRemoveProperty (Vertex*, unsigned char*);
+
 
 #endif
