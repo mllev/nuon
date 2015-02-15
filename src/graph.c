@@ -336,7 +336,7 @@ VertexContainer* graph_vertexContainerInit (Vertex* vertex)
   if ( !vertex->properties ) {
     return NULL;
   }
-  
+
   VertexContainer* v = malloc(sizeof(VertexContainer));
   v->vertex = vertex;
   v->next = NULL;
@@ -359,7 +359,6 @@ VertexContainer* graph_getVertices (Graph* g, unsigned char* label, unsigned cha
     edge_iter = type->edges;
     while ( edge_iter ) {
       if ( prop ) {
-        free(prop);
         prop = NULL;
       }
       if ( key ) {
@@ -379,9 +378,8 @@ VertexContainer* graph_getVertices (Graph* g, unsigned char* label, unsigned cha
   } else {
     while ( ptr ) {
       if ( prop ) {
-          free(prop);
-          prop = NULL;
-        }
+        prop = NULL;
+      }
       if ( ptr->data ) {
         if ( key ) {
           prop = graph_vertexGetProperty(ptr->data, key);
@@ -399,5 +397,6 @@ VertexContainer* graph_getVertices (Graph* g, unsigned char* label, unsigned cha
       ptr = ptr->next[0];
     }
   } 
+
   return head;
 }
