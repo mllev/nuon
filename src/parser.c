@@ -254,12 +254,21 @@ void _type (__Global* data)
     /***/
     _data(data);
   } else {
-    /* setCurrentNode(ident: data->cache) */
-    data->node_curr = exec_findNode(data->node_root, data->cache);
-    if ( !data->node_curr ) {
-      error("unidentified variable", (const char *)data->cache);
+    if ( !strncmp(data->cmd, "create", 6) ) {
+      /* setCurrentNode(ident: data->cache) */
+      data->node_curr = exec_findNode(data->node_root, data->cache);
+      if ( !data->node_curr ) {
+        error("unidentified variable", (const char *)data->cache);
+      }
+      /***/
+    } else {
+      data->node_curr = exec_addNode(data->node_root, data->cache);
+      /* because the new node created may be the first node created */
+      if ( data->node_curr && !data->node_root ) {
+        data->node_root = data->node_curr;
+      }
+      /***/
     }
-    /***/
   }
 }
 

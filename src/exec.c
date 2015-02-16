@@ -24,7 +24,13 @@ node_data_t* exec_addNode(node_data_t* root, unsigned char* ident)
   node->next = NULL;
 
   if ( root ) {
-    while ( root->next ) { root = root->next; }
+    while ( root->next ) { 
+      if ( !strncmp((const char *)root->ident, (const char *)ident, len) ) {
+        free(node);
+        return root;
+      }
+      root = root->next;
+    }
     root->next = node;
   }
 
@@ -128,16 +134,54 @@ void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges)
   int count = 0, id;
 
   if ( !strncmp(cmd, "match", 5) ) {
-    returnData = graph_getVertices(g, root->label, root->keys[0], root->vals[0]);
-    while ( returnData ) {
-      printf("{\n");
-      prop_iter = returnData->vertex->properties;
-      while ( prop_iter ) {
-        printf("  %s : %s\n", prop_iter->key, prop_iter->val);
-        prop_iter = prop_iter->next;
+    while ( node_iter ) {
+      count = node_iter->propcount;
+      if ( !count ) {
+        returnData = graph_getVertices(g, NULL, NULL, NULL);
+        while ( returnData ) {
+          printf("{\n");
+          prop_iter = returnData->vertex->properties;
+          while ( prop_iter ) {
+            printf("  %s : %s", prop_iter->key, prop_iter->val);
+            if ( prop_iter->next ) {
+              printf(",");
+            }
+            printf("\n");
+            prop_iter = prop_iter->next;
+          }
+          printf("}");
+          if ( returnData->next ) {
+            printf(",\n\n");
+          } else {
+            printf("\n\n");
+          }
+          returnData = returnData->next;
+        }
       }
-      printf("}\n");
-      returnData = returnData->next;
+      while (count) {
+        count--;
+        returnData = graph_getVertices(g, node_iter->label, node_iter->keys[count], node_iter->vals[count]);
+        while ( returnData ) {
+          printf("{\n");
+          prop_iter = returnData->vertex->properties;
+          while ( prop_iter ) {
+            printf("  %s : %s", prop_iter->key, prop_iter->val);
+            if ( prop_iter->next ) {
+              printf(",");
+            }
+            printf("\n");
+            prop_iter = prop_iter->next;
+          }
+          printf("}");
+          if ( returnData->next ) {
+            printf(",\n\n");
+          } else {
+            printf("\n\n");
+          }
+          returnData = returnData->next;
+        }
+      }
+      node_iter = node_iter->next;
     }
     return;
   }
