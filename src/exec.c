@@ -240,7 +240,6 @@ void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges, node_
   }
 
   if ( !strncmp(cmd, "set", 3) ) {
-
     while ( edge_set_iter ) { 
       node_iter = root;
       while ( node_iter ) {
@@ -267,7 +266,6 @@ void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges, node_
         }
         node_iter = node_iter->next;
       }
-      
       edge_set_iter = edge_set_iter->next;
     }
 
