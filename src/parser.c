@@ -56,6 +56,7 @@ typedef struct {
 
   /* updating nodes */
   node_set_data_t *update_node_root, *update_node_curr;
+  edge_set_data_t *update_edge_root, *update_edge_curr;
 
 } __Global;
 
@@ -136,13 +137,17 @@ void _edge (__Global* data)
   expect(data, lbrack);
 
   if ( accept(data, ident) ) {
-    /* createEdgeAndSetCurrent(ident: data->cache) */
-    data->edge_curr = exec_addEdge(data->edge_root, data->cache);
-    /***/
+    if ( strncmp(data->cmd, "set", 3) ) {
+      /* createEdgeAndSetCurrent(ident: data->cache) */
+      data->edge_curr = exec_addEdge(data->edge_root, data->cache);
+      /***/
+    }
   } else {
-    /* createEdgeAndSetCurrent(ident: null) */
-    data->edge_curr = exec_addEdge(data->edge_root, NULL);
-    /***/
+    if ( strncmp(data->cmd, "set", 3) ) {
+      /* createEdgeAndSetCurrent(ident: null) */
+      data->edge_curr = exec_addEdge(data->edge_root, NULL);
+      /***/
+    }
   }
 
   /* because the new edge created may be the first edge created */
@@ -153,16 +158,20 @@ void _edge (__Global* data)
 
   expect(data, colon);
   expect(data, ident);
-   /* setLabelOnCurrentEdge(label: data->cache) */
-  exec_addLabelToEdge(data->edge_curr, data->cache);
-  /***/
+  if ( strncmp(data->cmd, "set", 3) ) {
+     /* setLabelOnCurrentEdge(label: data->cache) */
+    exec_addLabelToEdge(data->edge_curr, data->cache);
+    /***/
+  }
   expect(data, rbrack);
   expect(data, dash);
   expect(data, grthan);
 
-  /* setCurrentNodeAsLeftNodeToCurrentEdge() */
-  exec_setLeftNode(data->node_curr, data->edge_curr);
-  /***/
+  if ( !strncmp(data->cmd, "create", 6) ) {
+    /* setCurrentNodeAsLeftNodeToCurrentEdge() */
+    exec_setLeftNode(data->node_curr, data->edge_curr);
+    /***/
+  }
 }
 
 void _identList (__Global* data)
@@ -188,15 +197,23 @@ void _return (__Global* data)
 void _set (__Global* data)
 {
   unsigned char *iden, *prop, *val;
+  unsigned char *left, *right, *label;
 
   if ( accept(data, lparen) ) {
     expect(data, ident);
+    left = data->cache;
     expect(data, rparen);
     expect(data, dash);
     _edge(data);
+    label = data->cache;
     expect(data, lparen);
     expect(data, ident);
+    right = data->cache;
     expect(data, rparen);
+    data->update_edge_curr = exec_addEdgeUpdate(data->update_edge_root, label, left, right);
+    if ( !data->update_edge_root ) {
+      data->update_edge_root = data->update_edge_curr;
+    }
     return;
   }
 
@@ -338,15 +355,15 @@ void _expr (Graph* g, __Global* data)
 {
   if ( accept(data, create) ) {
     _create(data);
-    exec_cmd(g, data->cmd, data->node_root, data->edge_root, data->update_node_root);
+    exec_cmd(g, data->cmd, data->node_root, data->edge_root, data->update_node_root, data->update_edge_root);
   }
 
   else if ( accept(data, match) ) {
     _match(data);
-    exec_cmd(g, data->cmd, data->node_root, data->edge_root, data->update_node_root);
+    exec_cmd(g, data->cmd, data->node_root, data->edge_root, data->update_node_root, data->update_edge_root);
     _setList(data);
     if ( strncmp(data->cmd, "match", 5 ) ) {
-      exec_cmd(g, data->cmd, data->node_root, data->edge_root, data->update_node_root);
+      exec_cmd(g, data->cmd, data->node_root, data->edge_root, data->update_node_root, data->update_edge_root);
     }
     _return(data);
   }
@@ -378,6 +395,8 @@ void parse (Graph* g, unsigned char* p)
   data.edge_curr = NULL;
   data.update_node_root = NULL;
   data.update_node_curr = NULL;
+  data.update_edge_root = NULL;
+  data.update_edge_curr = NULL;
 
   memset(data.cmd, 0, 10);
 

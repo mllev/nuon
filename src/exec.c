@@ -66,6 +66,39 @@ node_set_data_t* exec_addNodeUpdate(node_set_data_t* root, unsigned char* ident,
   return node;
 }
 
+edge_set_data_t* exec_addEdgeUpdate(
+  edge_set_data_t* root, 
+  unsigned char* label, 
+  unsigned char* left, 
+  unsigned char* right
+){
+  int len, llen, rlen;
+  edge_set_data_t* edge;
+
+  llen = strlensafe(left);
+  rlen = strlensafe(right);
+  len = strlensafe(label);
+
+  edge = malloc(sizeof(edge_set_data_t));
+
+  strncpy((char *)edge->label, (char *)label, len);
+  strncpy((char *)edge->left, (char *)left, llen);
+  strncpy((char *)edge->right, (char *)right, rlen);
+
+  edge->left[llen] = 0;
+  edge->right[rlen] = 0;
+  edge->label[len] = 0;
+
+  edge->next = NULL;
+
+  if ( root ) {
+    while ( root->next ) { root = root->next; }
+    root->next = edge;
+  }
+
+  return edge;
+}
+
 void exec_addLabelToNode(node_data_t* node, unsigned char* label) 
 {
   int len;
@@ -178,12 +211,13 @@ void exec_printData (VertexContainer *vertices)
   }
 }
 
-void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges, node_set_data_t* uroot)
+void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges, node_set_data_t* uroot, edge_set_data_t* eroot)
 {
   Vertex *type, *node;
-  VertexContainer* returnData;
+  VertexContainer *returnData, *leftData, *rightData;
   node_data_t* node_iter = root;
   node_set_data_t* node_set_iter = uroot;
+  edge_set_data_t* edge_set_iter = eroot;
   edge_data_t* edge_iter = edges;
   int count = 0, id;
 
@@ -206,6 +240,37 @@ void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges, node_
   }
 
   if ( !strncmp(cmd, "set", 3) ) {
+
+    while ( edge_set_iter ) { 
+      node_iter = root;
+      while ( node_iter ) {
+        leftData = NULL;
+        rightData = NULL;
+        if ( !strncmp((const char *)node_iter->ident, 
+          (const char *)edge_set_iter->left, 
+          strlen((const char*)edge_set_iter->left)) ) {
+          leftData = node_iter->vrtxdata;
+        }
+        if ( !strncmp((const char *)node_iter->ident, 
+          (const char *)edge_set_iter->right, 
+          strlen((const char*)edge_set_iter->right)) ) {
+          rightData = node_iter->vrtxdata;
+        }
+        if ( leftData && rightData ) {
+          while ( leftData ) {
+            while ( rightData ) {
+              graph_vertexAddEdge(leftData->vertex, rightData->vertex, edge_set_iter->label);
+              rightData = rightData->next;
+            }
+            leftData = leftData->next;
+          }
+        }
+        node_iter = node_iter->next;
+      }
+      
+      edge_set_iter = edge_set_iter->next;
+    }
+
     while ( node_set_iter ) {
       node_iter = root;
       while ( node_iter ) {
@@ -220,7 +285,6 @@ void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges, node_
         }
         node_iter = node_iter->next;
       }
-      //printf("%s.%s = %s\n", node_set_iter->ident, node_set_iter->prop, node_set_iter->val);
       node_set_iter = node_set_iter->next;
     }
     return;
