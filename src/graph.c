@@ -270,6 +270,13 @@ void graph_vertexSetProperty (Vertex* vertex, unsigned char* key, unsigned char*
     Property* del = iter->next;
     iter->next = del->next;
     property_destroy(del);
+  } else {
+    if (!strncmpsafe((const char *)iter->key, key)) {
+      vertex->properties = property_init(key, val);
+      vertex->properties->next = iter->next;
+      property_destroy(iter);
+      return;
+    }
   }
 
   iter->next = property_init(key, val);
