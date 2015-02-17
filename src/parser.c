@@ -54,6 +54,9 @@ typedef struct {
   node_data_t *node_root, *node_curr;
   edge_data_t *edge_root, *edge_curr;
 
+  /* updating nodes */
+  node_set_data_t *update_node_root, *update_node_curr;
+
 } __Global;
 
 /* for error reporting */
@@ -184,6 +187,8 @@ void _return (__Global* data)
 
 void _set (__Global* data)
 {
+  unsigned char *iden, *prop, *val;
+
   if ( accept(data, lparen) ) {
     expect(data, ident);
     expect(data, rparen);
@@ -196,13 +201,26 @@ void _set (__Global* data)
   }
 
   _property(data);
+
+  iden = data->prev;
+  prop = data->cache;
+
   expect(data, equals);
   expect(data, string);
+
+  val = data->cache;
+
+  data->update_node_curr = exec_addNodeUpdate(data->update_node_root, iden, prop, val);
+
+  if ( !data->update_node_root ) {
+    data->update_node_root = data->update_node_curr;
+  }
 }
 
 void _setList (__Global* data)
 {
   if ( accept(data, set_sym) ) {
+    setcmd(data, "set");
     _set(data);
     _setList(data);
   }
@@ -314,25 +332,26 @@ void _match (__Global* data)
 {
   setcmd(data, "match");
   _nodeList(data);
-  _setList(data);
-  _return(data);
 }
 
 void _expr (Graph* g, __Global* data)
 {
   if ( accept(data, create) ) {
     _create(data);
+    exec_cmd(g, data->cmd, data->node_root, data->edge_root, data->update_node_root);
   }
 
   else if ( accept(data, match) ) {
     _match(data);
+    exec_cmd(g, data->cmd, data->node_root, data->edge_root, data->update_node_root);
+    _setList(data);
+    exec_cmd(g, data->cmd, data->node_root, data->edge_root, data->update_node_root);
+    _return(data);
   }
 
   else if ( data->tok && data->tok->data ) {
     fprintf(stderr, "error: unknown command %s\n", (const char *)data->tok->data);
   }
-
-  exec_cmd(g, data->cmd, data->node_root, data->edge_root);
 }
 
 void getsym (__Global* data)
@@ -355,6 +374,8 @@ void parse (Graph* g, unsigned char* p)
   data.node_curr = NULL;
   data.edge_root = NULL;
   data.edge_curr = NULL;
+  data.update_node_root = NULL;
+  data.update_node_curr = NULL;
 
   memset(data.cmd, 0, 10);
 

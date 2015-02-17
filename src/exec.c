@@ -37,6 +37,35 @@ node_data_t* exec_addNode(node_data_t* root, unsigned char* ident)
   return node;
 }
 
+node_set_data_t* exec_addNodeUpdate(node_set_data_t* root, unsigned char* ident, unsigned char* key, unsigned char* value)
+{
+  int ilen, klen, vlen;
+  node_set_data_t* node;
+
+  ilen = strlensafe(ident);
+  klen = strlensafe(key);
+  vlen = strlensafe(value);
+
+  node = malloc(sizeof(node_set_data_t));
+
+  strncpy((char *)node->ident, (char *)ident, ilen);
+  strncpy((char *)node->prop, (char *)key, klen);
+  strncpy((char *)node->val, (char *)value, vlen);
+
+  node->ident[ilen] = 0;
+  node->prop[klen] = 0;
+  node->val[vlen] = 0;
+
+  node->next = NULL;
+
+  if ( root ) {
+    while ( root->next ) { root = root->next; }
+    root->next = node;
+  }
+
+  return node;
+}
+
 void exec_addLabelToNode(node_data_t* node, unsigned char* label) 
 {
   int len;
@@ -124,12 +153,37 @@ void exec_addLabelToEdge(edge_data_t* edge, unsigned char* label)
   edge->label[len] = 0;
 }
 
-void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges)
+void exec_printData (VertexContainer *vertices)
+{
+  Property* prop_iter;
+
+  while ( vertices ) {
+    printf("{\n");
+    prop_iter = vertices->vertex->properties;
+    while ( prop_iter ) {
+      printf("  %s : %s", prop_iter->key, prop_iter->val);
+      if ( prop_iter->next ) {
+        printf(",");
+      }
+      printf("\n");
+      prop_iter = prop_iter->next;
+    }
+    printf("}");
+    if ( vertices->next ) {
+      printf(",\n\n");
+    } else {
+      printf("\n\n");
+    }
+    vertices = vertices->next;
+  }
+}
+
+void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges, node_set_data_t* uroot)
 {
   Vertex *type, *node;
   VertexContainer* returnData;
-  Property* prop_iter;
   node_data_t* node_iter = root;
+  node_set_data_t* node_set_iter = uroot;
   edge_data_t* edge_iter = edges;
   int count = 0, id;
 
@@ -137,51 +191,24 @@ void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges)
     while ( node_iter ) {
       count = node_iter->propcount;
       if ( !count ) {
-        returnData = graph_getVertices(g, NULL, NULL, NULL);
-        while ( returnData ) {
-          printf("{\n");
-          prop_iter = returnData->vertex->properties;
-          while ( prop_iter ) {
-            printf("  %s : %s", prop_iter->key, prop_iter->val);
-            if ( prop_iter->next ) {
-              printf(",");
-            }
-            printf("\n");
-            prop_iter = prop_iter->next;
-          }
-          printf("}");
-          if ( returnData->next ) {
-            printf(",\n\n");
-          } else {
-            printf("\n\n");
-          }
-          returnData = returnData->next;
-        }
-      }
-      while (count) {
-        count--;
-        returnData = graph_getVertices(g, node_iter->label, node_iter->keys[count], node_iter->vals[count]);
-        while ( returnData ) {
-          printf("{\n");
-          prop_iter = returnData->vertex->properties;
-          while ( prop_iter ) {
-            printf("  %s : %s", prop_iter->key, prop_iter->val);
-            if ( prop_iter->next ) {
-              printf(",");
-            }
-            printf("\n");
-            prop_iter = prop_iter->next;
-          }
-          printf("}");
-          if ( returnData->next ) {
-            printf(",\n\n");
-          } else {
-            printf("\n\n");
-          }
-          returnData = returnData->next;
+        node_iter->vrtxdata = graph_getVertices(g, NULL, NULL, NULL);
+        //exec_printData(node_iter->vrtxdata);
+      } else {
+        while (count) {
+          count--;
+          node_iter->vrtxdata = graph_getVertices(g, node_iter->label, node_iter->keys[count], node_iter->vals[count]);
+          //exec_printData(node_iter->vrtxdata);
         }
       }
       node_iter = node_iter->next;
+    }
+    return;
+  }
+
+  if ( !strncmp(cmd, "set", 3) ) {
+    while ( node_set_iter ) {
+      printf("%s.%s = %s\n", node_set_iter->ident, node_set_iter->prop, node_set_iter->val);
+      node_set_iter = node_set_iter->next;
     }
     return;
   }

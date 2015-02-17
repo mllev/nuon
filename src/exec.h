@@ -35,6 +35,7 @@
 
 typedef struct node_data node_data_t;
 typedef struct edge_data edge_data_t;
+typedef struct node_set_data node_set_data_t;
 
 struct node_data {
   /* identifier */
@@ -54,6 +55,8 @@ struct node_data {
 
   /* pointer to node in graph */
   Vertex* ptr;
+
+  VertexContainer *vrtxdata;
 };
 
 struct edge_data {
@@ -69,11 +72,21 @@ struct edge_data {
   edge_data_t* next;
 };
 
+struct node_set_data {
+  unsigned char ident[512];
+  unsigned char prop[512];
+  unsigned char val[512];
+  node_set_data_t* next;
+};
+
 /* node api */
 node_data_t* exec_addNode(node_data_t*, unsigned char*);
 void exec_addLabelToNode(node_data_t*, unsigned char*);
 node_data_t* exec_findNode(node_data_t*, unsigned char*);
 void exec_addProperty(node_data_t*, unsigned char*, unsigned char*);
+
+/* node updating api */
+node_set_data_t* exec_addNodeUpdate(node_set_data_t*, unsigned char*, unsigned char*, unsigned char*);
 
 /* relationship api */
 edge_data_t* exec_addEdge(edge_data_t*, unsigned char*);
@@ -82,6 +95,7 @@ void exec_setLeftNode(node_data_t*, edge_data_t*);
 void exec_addLabelToEdge(edge_data_t*, unsigned char*);
 
 /* execute commands */
-void exec_cmd (Graph*, char*, node_data_t*, edge_data_t*);
+void exec_cmd (Graph*, char*, node_data_t*, edge_data_t*, node_set_data_t*);
+void exec_printData (VertexContainer*);
 
 #endif
