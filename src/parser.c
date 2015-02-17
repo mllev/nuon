@@ -345,7 +345,9 @@ void _expr (Graph* g, __Global* data)
     _match(data);
     exec_cmd(g, data->cmd, data->node_root, data->edge_root, data->update_node_root);
     _setList(data);
-    exec_cmd(g, data->cmd, data->node_root, data->edge_root, data->update_node_root);
+    if ( strncmp(data->cmd, "match", 5 ) ) {
+      exec_cmd(g, data->cmd, data->node_root, data->edge_root, data->update_node_root);
+    }
     _return(data);
   }
 

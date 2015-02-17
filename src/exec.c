@@ -192,12 +192,12 @@ void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges, node_
       count = node_iter->propcount;
       if ( !count ) {
         node_iter->vrtxdata = graph_getVertices(g, NULL, NULL, NULL);
-        //exec_printData(node_iter->vrtxdata);
+        exec_printData(node_iter->vrtxdata);
       } else {
         while (count) {
           count--;
           node_iter->vrtxdata = graph_getVertices(g, node_iter->label, node_iter->keys[count], node_iter->vals[count]);
-          //exec_printData(node_iter->vrtxdata);
+          exec_printData(node_iter->vrtxdata);
         }
       }
       node_iter = node_iter->next;
@@ -207,7 +207,20 @@ void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges, node_
 
   if ( !strncmp(cmd, "set", 3) ) {
     while ( node_set_iter ) {
-      printf("%s.%s = %s\n", node_set_iter->ident, node_set_iter->prop, node_set_iter->val);
+      node_iter = root;
+      while ( node_iter ) {
+        if ( !strncmp((const char *)node_iter->ident, 
+          (const char *)node_set_iter->ident, 
+          strlen((const char*)node_iter->ident)) ) {
+          returnData = node_iter->vrtxdata;
+          while ( returnData ) {
+            graph_vertexSetProperty(returnData->vertex, node_set_iter->prop, node_set_iter->val);
+            returnData = returnData->next;
+          }
+        }
+        node_iter = node_iter->next;
+      }
+      //printf("%s.%s = %s\n", node_set_iter->ident, node_set_iter->prop, node_set_iter->val);
       node_set_iter = node_set_iter->next;
     }
     return;
