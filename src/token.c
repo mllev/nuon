@@ -38,6 +38,7 @@
 #define IS_MATCH_TOK(x) !strncmp((const char*)x, "MATCH", 5) || !strncmp((const char*)x, "match", 5)
 #define IS_RETURN_TOK(x) !strncmp((const char*)x, "RETURN", 6) || !strncmp((const char*)x, "return", 6)
 #define IS_SET_TOK(x) !strncmp((const char*)x, "SET", 3) || !strncmp((const char*)x, "set", 3)
+#define IS_AS_TOK(x) !strncmp((const char*)x, "AS", 2) || !strncmp((const char*)x, "as", 2)
 
 int token_isWhite (unsigned char);
 void token_skipWhite (unsigned char**);
@@ -140,6 +141,9 @@ Token* token (unsigned char** i)
       } else if ( IS_SET_TOK(*i) ) {
         token->sym = set_sym;
         (*i) += 3;
+      } else if ( IS_AS_TOK(*i) ) {
+        token->sym = as_sym;
+        (*i) += 2;
       } else if ( IS_RETURN_TOK(*i) ) {
         token->sym = return_sym;
         (*i) += 6;

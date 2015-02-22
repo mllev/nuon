@@ -15,17 +15,21 @@ node_data_t* exec_addNode(node_data_t* root, unsigned char* ident)
   int len;
   node_data_t* node;
 
-  len = strlensafe(ident);
   node = malloc(sizeof(node_data_t));
 
-  strncpy((char *)node->ident, (char *)ident, len);
-  node->ident[len] = 0;
+  if ( ident ) { 
+    len = strlensafe(ident);
+    strncpy((char *)node->ident, (char *)ident, len);
+    node->ident[len] = 0;
+  } else {
+    node->ident[0] = 0;
+  }
 
   node->next = NULL;
 
   if ( root ) {
     while ( root->next ) { 
-      if ( !strncmp((const char *)root->ident, (const char *)ident, len) ) {
+      if ( ident && !strncmp((const char *)root->ident, (const char *)ident, len) ) {
         free(node);
         return root;
       }

@@ -43,15 +43,15 @@ Data ::=
   "{" KeyValueList "}"
 
 Type ::=
-    ident ":" ident 
+    ident "as" ident 
   | ident
 
 Node ::=
     "(" Type Data ")"
 
 Edge ::=
-    "-[" ident ":" ident "]->"
-  | "-[" ":" ident "]->"
+    "-[" ident "as" ident "]->"
+  | "-[" ident "]->"
 
 NodeList ::= 
     Node 

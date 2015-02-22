@@ -67,12 +67,18 @@ const char* symstr[] = {
   ":",      "create",  "match",
   "ident",  "string",  "set",
   ",",      "-",       ">",
-  "return", ".",       "="
+  "return", ".",       "=",
+  "as"
 };
 
 void getsym (__Global*);
 void setcmd (__Global*, const char* cmd);
 void error (const char *, const char *);
+
+int peek (__Global*, Symbol);
+int accept (__Global*, Symbol);
+int expect (__Global*, Symbol);
+
 void _create (__Global*);
 void _match (__Global*);
 void _nodeList (__Global*);
@@ -111,6 +117,15 @@ int accept (__Global* data, Symbol s)
       data->cache = data->tok->data;
     }
     getsym(data);
+    return 1;
+  }
+
+  return 0;
+}
+
+int peek (__Global* data, Symbol s)
+{
+  if ( data->tok && data->tok->sym == s ) {
     return 1;
   }
 
@@ -276,11 +291,20 @@ void _type (__Global* data)
 {
   expect(data, ident);
 
-  if ( accept(data, colon) ) {
+  if ( accept(data, as_sym) ) {
     expect(data, ident);
     /* addNodeAndSetCurrent(ident: data->prev) */
     /* addLabelToCurrent(label: data->cache) */
-    data->node_curr = exec_addNode(data->node_root, data->prev);
+    data->node_curr = exec_addNode(data->node_root, data->cache);
+    exec_addLabelToNode(data->node_curr, data->prev);
+    /* because the new node created may be the first node created */
+    if ( data->node_curr && !data->node_root ) {
+      data->node_root = data->node_curr;
+    }
+    /***/
+    _data(data);
+  } else if ( peek(data, lbrace) ) {
+    data->node_curr = exec_addNode(data->node_root, NULL);
     exec_addLabelToNode(data->node_curr, data->cache);
     /* because the new node created may be the first node created */
     if ( data->node_curr && !data->node_root ) {

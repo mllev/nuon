@@ -44,7 +44,8 @@ enum symbol {
   colon,      create,  match,
   ident,      string,  set_sym,
   comma,      dash,    grthan,
-  return_sym, period,  equals
+  return_sym, period,  equals,
+  as_sym
 };
 
 struct token {
