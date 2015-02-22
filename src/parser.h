@@ -50,8 +50,7 @@ Node ::=
     "(" Type Data ")"
 
 Edge ::=
-    "-[" ident "as" ident "]->"
-  | "-[" ident "]->"
+    "-[" ident "]->"
 
 NodeList ::= 
     Node 

@@ -150,37 +150,17 @@ int expect (__Global* data, Symbol s)
 void _edge (__Global* data) 
 {
   expect(data, lbrack);
-
-  if ( accept(data, ident) ) {
-    if ( strncmp(data->cmd, "set", 3) ) {
-      /* createEdgeAndSetCurrent(ident: data->cache) */
-      data->edge_curr = exec_addEdge(data->edge_root, data->cache);
-      /***/
-    }
-  } else {
-    if ( strncmp(data->cmd, "set", 3) ) {
-      /* createEdgeAndSetCurrent(ident: null) */
-      data->edge_curr = exec_addEdge(data->edge_root, NULL);
-      /***/
-    }
-  }
-
-  /* because the new edge created may be the first edge created */
-  if ( data->edge_curr && !data->edge_root ) {
-    data->edge_root = data->edge_curr;
-  }
-  /***/
-
-  expect(data, colon);
   expect(data, ident);
-  if ( strncmp(data->cmd, "set", 3) ) {
-     /* setLabelOnCurrentEdge(label: data->cache) */
-    exec_addLabelToEdge(data->edge_curr, data->cache);
-    /***/
-  }
   expect(data, rbrack);
   expect(data, dash);
   expect(data, grthan);
+
+  if ( strncmp(data->cmd, "set", 3) ) {
+     /***/
+    data->edge_curr = exec_addEdge(data->edge_root, NULL);
+    exec_addLabelToEdge(data->edge_curr, data->cache);
+    /***/
+  }
 
   if ( !strncmp(data->cmd, "create", 6) ) {
     /* setCurrentNodeAsLeftNodeToCurrentEdge() */
