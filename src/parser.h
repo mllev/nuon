@@ -36,8 +36,8 @@
 /*** Grammar ***
 
 KeyValueList ::= 
-    string ":" string
-  | string ":" string, KeyValueList
+    ident ":" string
+  | ident ":" string, KeyValueList
 
 Data ::= 
   "{" KeyValueList "}"

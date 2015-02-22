@@ -195,16 +195,16 @@ void exec_printData (VertexContainer *vertices)
   Property* prop_iter;
 
   while ( vertices ) {
-    printf("{ ");
+    printf("{");
     prop_iter = vertices->vertex->properties;
     while ( prop_iter ) {
-      printf("\"%s\":\"%s\"", prop_iter->key, prop_iter->val);
+      printf("%s:\"%s\"", prop_iter->key, prop_iter->val);
       if ( prop_iter->next ) {
         printf(",");
       }
       prop_iter = prop_iter->next;
     }
-    printf(" }\n");
+    printf("}\n");
     vertices = vertices->next;
   }
 }

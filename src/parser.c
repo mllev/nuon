@@ -247,7 +247,7 @@ void _property (__Global* data)
 
 void _keyValueList (__Global* data)
 {
-  expect(data, string);
+  expect(data, ident);
   expect(data, colon);
   expect(data, string);
 
