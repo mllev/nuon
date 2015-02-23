@@ -280,7 +280,8 @@ void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges, node_
         if ( leftData && rightData ) {
           while ( leftData ) {
             while ( rightData ) {
-              graph_vertexAddEdge(leftData->vertex, rightData->vertex, edge_set_iter->label);
+              if (leftData->vertex != rightData->vertex)
+                graph_vertexAddEdge(leftData->vertex, rightData->vertex, edge_set_iter->label);
               rightData = rightData->next;
             }
             leftData = leftData->next;
@@ -339,7 +340,8 @@ void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges, node_
   }
 
   while ( edge_iter ) { 
-    graph_vertexAddEdge(edge_iter->node_l->ptr, edge_iter->node_r->ptr, edge_iter->label);
+    if (edge_iter->node_l->ptr != edge_iter->node_r->ptr)
+      graph_vertexAddEdge(edge_iter->node_l->ptr, edge_iter->node_r->ptr, edge_iter->label);
     edge_iter = edge_iter->next;
   }
 
