@@ -1,5 +1,5 @@
 #### nuon
 Details coming...
 ```
-CREATE (Database as d {"name": "nuon"})
+CREATE (Database as d {name: "nuon"})
 ```
