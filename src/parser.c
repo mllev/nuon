@@ -82,6 +82,7 @@ int expect (__Global*, Symbol);
 void _create (__Global*);
 void _match (__Global*);
 void _nodeList (__Global*);
+void _matchNodeList (__Global*);
 void _node (__Global*);
 void _type (__Global*);
 void _data (__Global*);
@@ -160,6 +161,10 @@ void _edge (__Global* data)
     data->edge_curr = exec_addEdge(data->edge_root, NULL);
     exec_addLabelToEdge(data->edge_curr, data->cache);
     /***/
+
+    if ( !data->edge_root ) {
+      data->edge_root = data->edge_curr;
+    }
   }
 
   if ( !strncmp(data->cmd, "create", 6) ) {
@@ -343,6 +348,16 @@ void _nodeList (__Global* data)
   }
 }
 
+void _matchNodeList (__Global* data)
+{
+  _node(data);
+
+  if ( accept(data, comma) ) {
+    _matchNodeList(data);
+    return;
+  }
+}
+
 void _create (__Global* data)
 {
   setcmd(data, "create");
@@ -352,7 +367,7 @@ void _create (__Global* data)
 void _match (__Global* data)
 {
   setcmd(data, "match");
-  _nodeList(data);
+  _matchNodeList(data);
 }
 
 void _expr (Graph* g, __Global* data)

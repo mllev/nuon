@@ -193,16 +193,25 @@ void exec_addLabelToEdge(edge_data_t* edge, unsigned char* label)
 void exec_printData (VertexContainer *vertices)
 {
   Property* prop_iter;
+  Edge* edge_iter;
 
   while ( vertices ) {
     printf("{");
     prop_iter = vertices->vertex->properties;
+    edge_iter = vertices->vertex->edges;
     while ( prop_iter ) {
       printf("%s:\"%s\"", prop_iter->key, prop_iter->val);
       if ( prop_iter->next ) {
         printf(",");
       }
       prop_iter = prop_iter->next;
+    }
+    while ( edge_iter ) {
+      printf("%s:", edge_iter->label);
+      if ( edge_iter->next ) {
+        printf(",");
+      }
+      edge_iter = edge_iter->next;
     }
     printf("}\n");
     vertices = vertices->next;

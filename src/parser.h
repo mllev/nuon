@@ -58,11 +58,15 @@ NodeList ::=
   | Node "," NodeList
   | Node Edge Node "," NodeList
 
+MatchNodeList ::= 
+    Node 
+  | Node "," NodeList
+
 Create ::=
     "create" NodeList
 
 Match ::= 
-    "match" NodeList SetList Return
+    "match" MatchNodeList SetList Return
 
 Property ::=
     ident "." ident
