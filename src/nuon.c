@@ -1,7 +1,7 @@
 /* NUON - Graph Database
  *
  * For my beautiful sister Holly and your triumphant battle against cancer. 
- * Your courage was truly humbling.
+ * Your courage is truly humbling.
  *
  * Copyright (c) 2015, Matthew Levenstein
  * All rights reserved.
