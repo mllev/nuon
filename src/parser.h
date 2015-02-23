@@ -94,14 +94,6 @@ Expr ::=
   | Create Expr
   | null
 
-*** Examples *** HEAVILY inspired by Neo4j's Cypher query language ***
-
-CREATE (p:Person {"name": "Matt"}), (q:Person {"name": "Jordan"}), (p) -[k:knows]-> (q)
-
-MATCH (p:Person {"name": "Matt"}) -[:knows]-> (q) SET p.name = "jim" SET q.age = "25" SET (p) -[:hates]-> (q) return p, q
-
-***** opcodes *****
-
 ***************/
 
 void parse (Graph*, unsigned char*);

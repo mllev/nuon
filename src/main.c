@@ -33,23 +33,53 @@
 #include <string.h>
 #include <time.h>
 
-#include "query.h"
-#include "graph.h"
+#include "linenoise.h"
+#include "nuon.h"
 
 void teststr(char * str);
 void query_parserTest (void);
+char* readline (FILE*);
+
+char* readline (FILE* f)
+{
+  unsigned char* buf = NULL;
+  int c = 0, i = 0, bufsize = 10;
+
+  buf = malloc(bufsize + 1);
+  memset(buf, 0, bufsize + 1);
+
+  while ( (c = fgetc(f)) != EOF ) {
+    if ( i == bufsize ) {
+      buf = realloc(buf, (bufsize += 10) + 1);
+    }
+    buf[i++] = (unsigned char)c;
+    if ( buf[i - 1] == '\n' ) {
+      break;
+    }
+  }
+
+  buf[i] = 0;
+
+  return (char *)buf;
+}
+
 
 void query_parserTest (void)
 {
   Graph* g = graph_init(100000);
-  char* str;
-  while ( 1 ) {
-    printf("nuon> ");
-    str = query_readline(stdin);
-    query_exec(g, (const char *)str);
-    free(str);
-    str = NULL;
+  char* line;
+  while((line = linenoise("nuon> ")) != NULL) {
+    parse(g, (unsigned char *)line);
+    linenoiseHistoryAdd(line);
+    free(line);
   }
+  // while ( 1 ) {
+  //   printf("nuon> ");
+  //   line = readline(stdin);
+  //   parse(g, (unsigned char *)line);
+  //   free(line);
+  //   line = NULL;
+  // }
 }
 
 void teststr(char * str)
