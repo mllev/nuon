@@ -41,12 +41,12 @@ int height ();
 map_node_t* map_node_init (int, const char*, void*);
 void map_node_destroy (map_node_t *);
 
-static inline int strncmpsafe (const char* k0, unsigned char* k1)
+static inline int strncmpsafe (unsigned char* k0, unsigned char* k1)
 {
   int kl0, kl1, kl, res;
 
-  kl0 = strlen(k0);
-  kl1 = strlen((const char*)k1);
+  kl0 = strlen((const char *)k0);
+  kl1 = strlen((const char *)k1);
   kl = (kl0 < kl1 ? kl0 : kl1);
   res = strncmp((const char*)k0, (const char*)k1, kl);
 
@@ -121,7 +121,7 @@ int map_remove (map_t* m, const char* k)
   map_node_t* del;
 
   while ( --h >= 0 ) {
-    while ( iter->next[h] && strncmpsafe(k, iter->next[h]->key) < 0 ) {
+    while ( iter->next[h] && strncmpsafe((unsigned char *)k, iter->next[h]->key) < 0 ) {
       iter = iter->next[h];
     }
 
@@ -130,11 +130,11 @@ int map_remove (map_t* m, const char* k)
 
   del = update[0]->next[0];
 
-  if ( iter->next[0] && !strncmpsafe(k, iter->next[0]->key) ) {
+  if ( iter->next[0] && !strncmpsafe((unsigned char *)k, iter->next[0]->key) ) {
     h = m->height;
 
     while ( i < h ) {
-      if ( strncmpsafe(k, update[i]->next[i]->key) ) {
+      if ( strncmpsafe((unsigned char *)k, update[i]->next[i]->key) ) {
         break;
       }
 
@@ -161,14 +161,14 @@ int map_set (map_t* m, const char* k, void* v)
   map_node_t* n;
 
   while ( --h >= 0 ) {
-    while ( iter->next[h] && strncmpsafe(k, iter->next[h]->key) < 0 ) {
+    while ( iter->next[h] && strncmpsafe((unsigned char *)k, iter->next[h]->key) < 0 ) {
       iter = iter->next[h];
     }
 
     update[h] = iter;
   }
 
-  if ( iter->next[0] && !strncmpsafe(k, iter->next[0]->key) ) {
+  if ( iter->next[0] && !strncmpsafe((unsigned char *)k, iter->next[0]->key) ) {
     free(iter->next[0]->data);
     iter->next[0]->data = v;
     return 1;
@@ -202,12 +202,12 @@ void* map_get (map_t* m, const char* k)
   int klen = strlen(k);
 
   while (--h >= 0) {
-    while ( iter->next[h] && strncmpsafe(k, iter->next[h]->key) < 0 ) {
+    while ( iter->next[h] && strncmpsafe((unsigned char *)k, iter->next[h]->key) < 0 ) {
       iter = iter->next[h];
     }
   }
 
-  if ( !iter->next[0] || strncmpsafe(k, iter->next[0]->key) != 0 ) {
+  if ( !iter->next[0] || strncmpsafe((unsigned char *)k, iter->next[0]->key) != 0 ) {
     return NULL;
   }
 
@@ -485,7 +485,7 @@ void graph_vertexSetProperty (Vertex* vertex, unsigned char* key, unsigned char*
   }
 
   while (iter->next) {
-    if (!strncmpsafe((const char *)iter->next->key, key)) {
+    if (!strncmpsafe(iter->next->key, key)) {
       exists = 1;
       break;
     }
@@ -497,7 +497,7 @@ void graph_vertexSetProperty (Vertex* vertex, unsigned char* key, unsigned char*
     iter->next = del->next;
     property_destroy(del);
   } else {
-    if (!strncmpsafe((const char *)iter->key, key)) {
+    if (!strncmpsafe(iter->key, key)) {
       vertex->properties = property_init(key, val);
       vertex->properties->next = iter->next;
       property_destroy(iter);
@@ -516,7 +516,7 @@ unsigned char* graph_vertexGetProperty (Vertex* vertex, unsigned char* key)
   int kl = strlen((const char *)key);
 
   while ( iter ) {
-    if (!strncmpsafe((const char *)iter->key, key)) {
+    if (!strncmpsafe(iter->key, key)) {
       break;
     }
     iter = iter->next;
@@ -541,7 +541,7 @@ void graph_vertexRemoveProperty (Vertex* vertex, unsigned char* key)
   iter = vertex->properties;
 
   /* if it's the first one to be deleted */
-  if ( !strncmpsafe((const char *)iter->key, key)) {
+  if ( !strncmpsafe(iter->key, key)) {
     del = iter;
     vertex->properties = iter->next;
     property_destroy(del);
@@ -549,7 +549,7 @@ void graph_vertexRemoveProperty (Vertex* vertex, unsigned char* key)
   }
 
   while ( iter->next ) {
-    if ( !strncmpsafe((const char*)iter->next->key, key) ) {
+    if ( !strncmpsafe(iter->next->key, key) ) {
       break;
     }
     iter = iter->next;
@@ -597,7 +597,7 @@ VertexContainer* graph_getVertices (Graph* g, unsigned char* label, unsigned cha
       if ( key ) {
         prop = graph_vertexGetProperty(edge_iter->to, key);
       }
-      if ( !key || (prop && !strncmp((const char *)prop, (const char*)val, strlen((const char *)val))) ) {
+      if ( !key || (prop && !strncmpsafe(prop, val)) ) {
         if ( !head ) {
           head = graph_vertexContainerInit(edge_iter->to);
           tail = head;
@@ -617,7 +617,7 @@ VertexContainer* graph_getVertices (Graph* g, unsigned char* label, unsigned cha
         if ( key ) {
           prop = graph_vertexGetProperty(ptr->data, key);
         }
-        if ( !key || (prop && !strncmp((const char *)prop, (const char*)val, strlen((const char *)val))) ) {
+        if ( !key || (prop && !strncmpsafe(prop, val)) ) {
           if ( !head ) {
             head = graph_vertexContainerInit(ptr->data);
             tail = head;
