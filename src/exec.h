@@ -110,6 +110,6 @@ void exec_addLabelToEdge(edge_data_t*, unsigned char*);
 
 /* execute commands */
 void exec_cmd (Graph*, char*, node_data_t*, edge_data_t*, node_set_data_t*, edge_set_data_t*);
-void exec_printData (VertexContainer*);
+void exec_printData (VertexContainer*, int);
 
 #endif

@@ -190,15 +190,17 @@ void exec_addLabelToEdge(edge_data_t* edge, unsigned char* label)
   edge->label[len] = 0;
 }
 
-void exec_printData (VertexContainer *vertices)
+void exec_printData (VertexContainer *vertices, int newline)
 {
   Property* prop_iter;
   Edge* edge_iter;
+  VertexContainer* vc_iter, *cont;
+  vc_iter = vertices;
 
-  while ( vertices ) {
+  while ( vc_iter ) {
     printf("{");
-    prop_iter = vertices->vertex->properties;
-    edge_iter = vertices->vertex->edges;
+    prop_iter = vc_iter->vertex->properties;
+    edge_iter = vc_iter->vertex->edges;
     while ( prop_iter ) {
       printf("%s:\"%s\"", prop_iter->key, prop_iter->val);
       if ( prop_iter->next ) {
@@ -206,15 +208,28 @@ void exec_printData (VertexContainer *vertices)
       }
       prop_iter = prop_iter->next;
     }
+    if ( edge_iter ) {
+      printf(",");
+    }
     while ( edge_iter ) {
       printf("%s:", edge_iter->label);
+      cont = malloc(sizeof(VertexContainer));
+      cont->vertex = edge_iter->to;
+      cont->next = NULL;
+      //vc_iter = cont;
+      exec_printData(cont, 0);
       if ( edge_iter->next ) {
         printf(",");
       }
       edge_iter = edge_iter->next;
     }
-    printf("}\n");
-    vertices = vertices->next;
+    printf("}");
+
+    if (newline) {
+      printf("\n");
+    }
+
+    vc_iter = vc_iter->next;
   }
 }
 
@@ -233,12 +248,12 @@ void exec_cmd (Graph* g, char* cmd, node_data_t* root, edge_data_t* edges, node_
       count = node_iter->propcount;
       if ( !count ) {
         node_iter->vrtxdata = graph_getVertices(g, NULL, NULL, NULL);
-        exec_printData(node_iter->vrtxdata);
+        exec_printData(node_iter->vrtxdata, 1);
       } else {
         while (count) {
           count--;
           node_iter->vrtxdata = graph_getVertices(g, node_iter->label, node_iter->keys[count], node_iter->vals[count]);
-          exec_printData(node_iter->vrtxdata);
+          exec_printData(node_iter->vrtxdata, 1);
         }
       }
       node_iter = node_iter->next;
