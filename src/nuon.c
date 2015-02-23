@@ -43,13 +43,24 @@ void map_node_destroy (map_node_t *);
 
 static inline int strncmpsafe (const char* k0, unsigned char* k1)
 {
-  int kl0, kl1, kl;
+  int kl0, kl1, kl, res;
 
   kl0 = strlen(k0);
   kl1 = strlen((const char*)k1);
-  kl = (kl0 > kl1 ? kl0 : kl1);
-  
-  return strncmp((const char*)k0, (const char*)k1, kl);
+  kl = (kl0 < kl1 ? kl0 : kl1);
+  res = strncmp((const char*)k0, (const char*)k1, kl);
+
+  if ( !res ) {
+    if ( kl0 == kl1 ) {
+      return res;
+    } else if ( kl0 < kl1 ) {
+      return -1;
+    } else {
+      return 1;
+    }
+  } else {
+    return res;
+  }
 }
 
 map_t* map_init ()

@@ -37,7 +37,7 @@
 #include "nuon.h"
 
 void teststr(char * str);
-void query_parserTest (void);
+void parserTest (void);
 char* readline (FILE*);
 
 char* readline (FILE* f)
@@ -64,7 +64,7 @@ char* readline (FILE* f)
 }
 
 
-void query_parserTest (void)
+void parserTest (void)
 {
   Graph* g = graph_init(100000);
   char* line;
@@ -90,6 +90,6 @@ void teststr(char * str)
 
 int main (void)
 {
-  query_parserTest();
+  parserTest();
   return 0;
 }
