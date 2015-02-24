@@ -14,9 +14,8 @@
  *      / / /\ \ \
  *     / / /  \ \ \
  *    / / /    \ \ \
- *   / / /      \ \ \
- *    / /        \ \ \
- *                \ \
+ *     / /      \ \ \
+ *               \ \ 
  *
  * Copyright (c) 2015, Matthew Levenstein
  * All rights reserved.

@@ -1,22 +1,21 @@
-/* NUON - Graph Database
+/* NUON - Graph Database PROTOTYPE (piece of shit code)
  *
- *             / /|\ \ 
- *          / / /|||\ \ \
- *         | | |     | | |
- *         | | |     | | |
- *         \ \ \     / / /
- *          \ \ \   / / /
- *           \ \ \ / / /
- *            \ \ \ / /
- *             \ \ \ /  For my beautiful sister Holly and her triumphant battle against cancer. 
- *             /\ \ \   Your courage is truly humbling.
- *            / /\ \ \
- *           / / /\ \ \
- *          / / /  \ \ \
- *         / / /    \ \ \
- *        / / /      \ \ \
- *         / /        \ \ \
- *                     \ \
+ *        / /|\ \ 
+ *     / / /|||\ \ \
+ *    | | |     | | |
+ *    | | |     | | |
+ *    \ \ \     / / /
+ *     \ \ \   / / /
+ *      \ \ \ / / /
+ *       \ \ \ / /
+ *        \ \ \ /  For my beautiful sister Holly and her triumphant battle against cancer. 
+ *        /\ \ \   Your courage is truly humbling.
+ *       / /\ \ \
+ *      / / /\ \ \
+ *     / / /  \ \ \
+ *    / / /    \ \ \
+ *     / /      \ \ \
+ *               \ \ 
  *
  * Copyright (c) 2015, Matthew Levenstein
  * All rights reserved.
