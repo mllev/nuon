@@ -56,33 +56,25 @@
 int height ();
 map_node_t* map_node_init (int, const char*, void*);
 void map_node_destroy (map_node_t *);
+int nuonStrlen (unsigned char * str);
+int nuonStrncmp (unsigned char* k0, unsigned char* k1);
 
-static inline int nuonStrlen (unsigned char * str)
+int nuonStrlen (unsigned char * str)
 {
-  size_t len, nlen;
-
-  len = strlen((const char *)str);
-  nlen = len > 256 ? 256 : len;
-  str[nlen] = 0;
-  return nlen;
+  unsigned int len, nlen;
+  len = (unsigned int)strlen((const char *)str);
+  nlen = (len > 256 ? 256 : len);
+  return (int)nlen;
 }
 
-static inline int nuonStrncmp (unsigned char* k0, unsigned char* k1)
+int nuonStrncmp (unsigned char* k0, unsigned char* k1)
 {
   int kl0, kl1, kl, res;
-
   kl0 = nuonStrlen(k0);
   kl1 = nuonStrlen(k1);
   kl = (kl0 < kl1 ? kl0 : kl1);
   res = strncmp((const char*)k0, (const char*)k1, kl);
-
-  if ( !res ) {
-    if ( kl0 == kl1 ) { return 0; } 
-    else if ( kl0 < kl1 ) { return -1; }
-    else { return 1; }
-  } else {
-    return res;
-  }
+  return (res ? res : kl0 == kl1 ? 0 : kl0 < kl1 ? -1 : 1);
 }
 
 map_t* map_init ()
