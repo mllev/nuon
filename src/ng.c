@@ -53,7 +53,7 @@
 
 #include "ng.h"
 
-void* nuonMalloc (word_t size) {
+void* nuonMalloc (size_t size) {
   void* buf = malloc(size);
   if (!buf) {
     fprintf(stderr, "Fatal: out of memory.");
