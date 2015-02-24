@@ -105,11 +105,11 @@ TrieElem* nuonTrieFind (Trie* t, nByte_t* key, int alloc) {
   int i, l = nuonStrlen(key) * 4;
   unsigned c;
   for (i = 0; i < l; i++) {
-    int m = i % 4;
-    c = m == 3 ? (key[i / 4] & 0x3)  
-      : m == 2 ? (key[i / 4] & 0xc) >> 2   
-      : m == 1 ? (key[i / 4] & 0x30) >> 4  
-      : (key[i / 4] & 0xc0) >> 6;
+    int m = i % 4, n = i / 4;
+    c = m == 3 ? (key[n] &  0x3)
+      : m == 2 ? (key[n] &  0xc) >> 2
+      : m == 1 ? (key[n] & 0x30) >> 4
+      :          (key[n] & 0xc0) >> 6;
     if (!t->sub[c]) {
       if (!alloc) { return NULL; }
       t->sub[c] = (nWord_t)nuonTrieElemInit();
