@@ -12,7 +12,7 @@ void nuonFree (void *);
 int nuonStrlen (unsigned char *);
 int nuonStrncmp (unsigned char *, unsigned char *);
 
-#define NUON_TRIE_LIMIT 128 /* 7 bit ascii */
+#define NUON_TRIE_LIMIT 16 /* 2 ^ S where S is the span (4) */
 
 typedef union trieElem TrieElem;
 typedef TrieElem Trie;

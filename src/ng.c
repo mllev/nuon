@@ -85,12 +85,11 @@ int nuonStrncmp (nByte_t* k0, nByte_t* k1) {
 
 /* internal map api */
 Trie* nuonTrieElemInit (void);
-TrieElem* nuonTrieFind (Trie *, nByte_t *);
+TrieElem* nuonTrieFind (Trie *, nByte_t *, int);
 /***/
 
 Trie* nuonTrieElemInit (void) {
   Trie* t = nuonMalloc(sizeof(Trie));
-  memset(t, 0, NUON_TRIE_LIMIT);
   return t;
 }
 
@@ -98,12 +97,14 @@ Trie* nuonTrieInit (void) {
   return nuonTrieElemInit();
 }
 
-TrieElem* nuonTrieFind (Trie* t, nByte_t* key) {
-  int i = 0, l = nuonStrlen(key), c;
-  for (; i < l; i++) {
-    c = (int)key[i];
-    if (c < 0 || c > NUON_TRIE_LIMIT - 1) { return NULL; }
+TrieElem* nuonTrieFind (Trie* t, nByte_t* key, int alloc) {
+  int i, l = nuonStrlen(key) * 2;
+  unsigned c;
+  for (i = 0; i < l; i++) {
+    if (i % 2) { c = (unsigned)(key[i / 2] & 0xf); }
+    else { c = (unsigned)((key[i / 2] & 0xf0) >> 4); }
     if (!t->sub[c]) { 
+      if (!alloc) { return NULL; }
       t->sub[c] = (nWord_t)nuonTrieElemInit();
     }
     t = (TrieElem *)t->sub[c];
@@ -112,7 +113,7 @@ TrieElem* nuonTrieFind (Trie* t, nByte_t* key) {
 }
 
 int nuonTrieAdd (Trie* t, nByte_t* key, void* val) {
-  t = nuonTrieFind(t, key);
+  t = nuonTrieFind(t, key, 1);
   if (!t) { return 0; }
   t->sub[nuonTrieVal] = (nWord_t)val;
   (t->sub[nuonTrieSubCount])++;
@@ -120,6 +121,6 @@ int nuonTrieAdd (Trie* t, nByte_t* key, void* val) {
 }
 
 void* nuonTrieGet (Trie* t, nByte_t* key) {
-  t = nuonTrieFind(t, key);
+  t = nuonTrieFind(t, key, 0);
   return (void *)t->sub[nuonTrieVal];
 }
