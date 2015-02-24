@@ -127,5 +127,6 @@ int nuonTrieAdd (Trie* t, nByte_t* key, void* val) {
 
 void* nuonTrieGet (Trie* t, nByte_t* key) {
   t = nuonTrieFind(t, key, 0);
+  if (!t) { return NULL; }
   return (void *)t->sub[nuonTrieVal];
 }
