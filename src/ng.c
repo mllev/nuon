@@ -60,6 +60,7 @@ void* nuonMalloc (size_t size) {
     fprintf(stderr, "Fatal: out of memory.");
     abort();
   }
+  memset(buf, 0, size);
   return buf;
 }
 
@@ -109,7 +110,7 @@ TrieElem* nuonTrieFind (Trie* t, nByte_t* key, int alloc) {
       : m == 2 ? (key[i / 4] & 0xc) >> 2   
       : m == 1 ? (key[i / 4] & 0x30) >> 4  
       : (key[i / 4] & 0xc0) >> 6;
-    if (!t->sub[c]) { 
+    if (!t->sub[c]) {
       if (!alloc) { return NULL; }
       t->sub[c] = (nWord_t)nuonTrieElemInit();
     }
