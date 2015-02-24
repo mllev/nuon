@@ -50,6 +50,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "ng.h"
 
@@ -66,18 +67,59 @@ void nuonFree (void* buf) {
   free(buf);
 }
 
-int nuonStrlen (unsigned char * str) {
+int nuonStrlen (nByte_t* str) {
   unsigned int len, nlen;
   len = (unsigned int)strlen((const char *)str);
   nlen = (len > NUON_KEY_MAX ? NUON_KEY_MAX : len);
   return (int)nlen;
 }
 
-int nuonStrncmp (unsigned char* k0, unsigned char* k1) {
+int nuonStrncmp (nByte_t* k0, nByte_t* k1) {
   int kl0, kl1, kl, res;
   kl0 = nuonStrlen(k0);
   kl1 = nuonStrlen(k1);
   kl = (kl0 < kl1 ? kl0 : kl1);
   res = strncmp((const char*)k0, (const char*)k1, kl);
   return (res ? res : kl0 == kl1 ? 0 : kl0 < kl1 ? -1 : 1);
+}
+
+/* internal map api */
+Trie* nuonTrieElemInit (void);
+TrieElem* nuonTrieFind (Trie *, nByte_t *);
+/***/
+
+Trie* nuonTrieElemInit (void) {
+  Trie* t = nuonMalloc(sizeof(Trie));
+  memset(t, 0, NUON_TRIE_LIMIT);
+  return t;
+}
+
+Trie* nuonTrieInit (void) {
+  return nuonTrieElemInit();
+}
+
+TrieElem* nuonTrieFind (Trie* t, nByte_t* key) {
+  int i = 0, l = nuonStrlen(key), c;
+  for (; i < l; i++) {
+    c = (int)key[i];
+    if (c < 0 || c > NUON_TRIE_LIMIT - 1) { return NULL; }
+    if (!t->sub[c]) { 
+      t->sub[c] = (nWord_t)nuonTrieElemInit();
+    }
+    t = (TrieElem *)t->sub[c];
+  }
+  return t;
+}
+
+int nuonTrieAdd (Trie* t, nByte_t* key, void* val) {
+  t = nuonTrieFind(t, key);
+  if (!t) { return 0; }
+  t->sub[nuonTrieVal] = (nWord_t)val;
+  (t->sub[nuonTrieSubCount])++;
+  return 1;
+}
+
+void* nuonTrieGet (Trie* t, nByte_t* key) {
+  t = nuonTrieFind(t, key);
+  return (void *)t->sub[nuonTrieVal];
 }
