@@ -83,51 +83,6 @@ int nuonStrncmp (nByte_t* k0, nByte_t* k1) {
   return (res ? res : kl0 == kl1 ? 0 : kl0 < kl1 ? -1 : 1);
 }
 
-#define NUON_KEY_MAX 32
-
-typedef unsigned long int nWord_t;
-typedef unsigned char nByte_t;
-
-#define NUON_TRIE_LIMIT 4 /* 2 ^ S where S is the span (2) */
-#define NUON_TRIE_POOL 1024
-
-typedef union trieElem TrieElem;
-typedef TrieElem Trie;
-
-const int nuonTrieVal = NUON_TRIE_LIMIT;
-
-int bytes;
-
-union trieElem {
-  nWord_t sub[NUON_TRIE_LIMIT + 1];
-};
-
-int nuonStrlen (nByte_t *);
-void* nuonMalloc (nWord_t);
-Trie* nuonTrieInit (void);
-int nuonTrieAdd (Trie* t, nByte_t *, void *);
-void* nuonTrieGet (Trie* t, nByte_t* key);
-Trie* nuonTrieElemInit (void);
-TrieElem* nuonTrieFind (Trie *, nByte_t *, int);
-
-int nuonStrlen (nByte_t* str) {
-  unsigned int len, nlen;
-  len = (unsigned int)strlen((const char *)str);
-  nlen = (len > NUON_KEY_MAX ? NUON_KEY_MAX : len);
-  return (int)nlen;
-}
-
-
-void* nuonMalloc (size_t size) {
-  void* buf = malloc(size);
-  if (!buf) {
-    fprintf(stderr, "Fatal: out of memory.");
-    abort();
-  }
-  bytes += size;
-  return buf;
-}
-
 Trie* nuonTrieElemInit (void) {
   static int tcnt = NUON_TRIE_POOL;
   static Trie* pool = NULL;
