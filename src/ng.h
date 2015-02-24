@@ -12,21 +12,4 @@ void nuonFree (void *);
 int nuonStrlen (unsigned char *);
 int nuonStrncmp (unsigned char *, unsigned char *);
 
-#define NUON_TRIE_LIMIT 16 /* 2 ^ S where S is the span (4) */
-
-typedef union trieElem TrieElem;
-typedef TrieElem Trie;
-
-const int nuonTrieVal = NUON_TRIE_LIMIT;
-const int nuonTrieSubCount = nuonTrieVal + 1;
-
-union trieElem {
-  nWord_t sub[NUON_TRIE_LIMIT + 2];
-};
-
-/* map api */
-Trie* nuonTrieInit (void);
-int nuonTrieAdd (Trie* t, nByte_t *, void *);
-void* nuonTrieGet (Trie* t, nByte_t* key);
-
 #endif

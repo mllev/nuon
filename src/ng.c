@@ -83,13 +83,61 @@ int nuonStrncmp (nByte_t* k0, nByte_t* k1) {
   return (res ? res : kl0 == kl1 ? 0 : kl0 < kl1 ? -1 : 1);
 }
 
-/* internal map api */
+#define NUON_KEY_MAX 32
+
+typedef unsigned long int nWord_t;
+typedef unsigned char nByte_t;
+
+#define NUON_TRIE_LIMIT 4 /* 2 ^ S where S is the span (2) */
+#define NUON_TRIE_POOL 1024
+
+typedef union trieElem TrieElem;
+typedef TrieElem Trie;
+
+const int nuonTrieVal = NUON_TRIE_LIMIT;
+
+int bytes;
+
+union trieElem {
+  nWord_t sub[NUON_TRIE_LIMIT + 1];
+};
+
+int nuonStrlen (nByte_t *);
+void* nuonMalloc (nWord_t);
+Trie* nuonTrieInit (void);
+int nuonTrieAdd (Trie* t, nByte_t *, void *);
+void* nuonTrieGet (Trie* t, nByte_t* key);
 Trie* nuonTrieElemInit (void);
 TrieElem* nuonTrieFind (Trie *, nByte_t *, int);
-/***/
+
+int nuonStrlen (nByte_t* str) {
+  unsigned int len, nlen;
+  len = (unsigned int)strlen((const char *)str);
+  nlen = (len > NUON_KEY_MAX ? NUON_KEY_MAX : len);
+  return (int)nlen;
+}
+
+
+void* nuonMalloc (size_t size) {
+  void* buf = malloc(size);
+  if (!buf) {
+    fprintf(stderr, "Fatal: out of memory.");
+    abort();
+  }
+  bytes += size;
+  return buf;
+}
 
 Trie* nuonTrieElemInit (void) {
-  Trie* t = nuonMalloc(sizeof(Trie));
+  static int tcnt = NUON_TRIE_POOL;
+  static Trie* pool = NULL;
+  Trie* t;
+  if (tcnt == NUON_TRIE_POOL) {
+    pool = NULL;
+    pool = nuonMalloc(sizeof(Trie) * NUON_TRIE_POOL);
+    tcnt = 0;
+  }
+  t = &pool[tcnt++];
   return t;
 }
 
@@ -98,11 +146,14 @@ Trie* nuonTrieInit (void) {
 }
 
 TrieElem* nuonTrieFind (Trie* t, nByte_t* key, int alloc) {
-  int i, l = nuonStrlen(key) * 2;
+  int i, l = nuonStrlen(key) * 4;
   unsigned c;
   for (i = 0; i < l; i++) {
-    if (i % 2) { c = (unsigned)(key[i / 2] & 0xf); }
-    else { c = (unsigned)((key[i / 2] & 0xf0) >> 4); }
+    int m = i % 4;
+    c = m == 3 ? (key[i / 4] & 0x3)  
+      : m == 2 ? (key[i / 4] & 0xc) >> 2   
+      : m == 1 ? (key[i / 4] & 0x30) >> 4  
+      : (key[i / 4] & 0xc0) >> 6;
     if (!t->sub[c]) { 
       if (!alloc) { return NULL; }
       t->sub[c] = (nWord_t)nuonTrieElemInit();
@@ -116,7 +167,6 @@ int nuonTrieAdd (Trie* t, nByte_t* key, void* val) {
   t = nuonTrieFind(t, key, 1);
   if (!t) { return 0; }
   t->sub[nuonTrieVal] = (nWord_t)val;
-  (t->sub[nuonTrieSubCount])++;
   return 1;
 }
 
