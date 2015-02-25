@@ -12,16 +12,20 @@ void nuonFree (void *);
 int nuonStrlen (unsigned char *);
 int nuonStrncmp (unsigned char *, unsigned char *);
 
-typedef unsigned long int nWord_t;
-typedef unsigned char nByte_t;
+/* to change trie span, both variables below must be changed */
+#define NUON_TRIE_SPAN  3 /* trie span */
+#define NUON_TRIE_LIMIT 8 /* 2 ^ span */
 
-#define NUON_TRIE_LIMIT 4 /* 2 ^ S where S is the span (2) */
-#define NUON_TRIE_POOL 1024
+#define NUON_TRIE_POOL  2048
+#define NUON_BYTE_SIZE  8
 
 typedef union trieElem TrieElem;
 typedef TrieElem Trie;
 
-const int nuonTrieVal = NUON_TRIE_LIMIT;
+const int trieVal = NUON_TRIE_LIMIT;
+const int trieMask = 0xff >> (NUON_BYTE_SIZE - NUON_TRIE_SPAN);
+const int trieOff = NUON_BYTE_SIZE / NUON_TRIE_SPAN;
+const int trieDiff = NUON_BYTE_SIZE - NUON_TRIE_SPAN;
 
 int bytes;
 
