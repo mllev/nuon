@@ -1,3 +1,7 @@
+NUON
+Author  - Matthew Levenstein
+License - 3 Clause BSD
+
 sql-like graph query language:
 
 -- creates 2 nodes labeled "person"
@@ -103,5 +107,64 @@ SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? AS "favorite film" 
 SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? RETURN p, n;
 
 SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? SET p.property = "value", n.property = "value";
+
+=====================================================================================
+=================================== TOKENS ==========================================
+
+SELECT NODE WHERE AND SET . , ? = -> RETURN variable value property " ' 
+
+=====================================================================================
+================================ GRAMMAR (bnf-ish) ==================================
+
+value :=
+  " [any ascii character] " | ' [any ascii character] '
+
+variable :=
+  [_a-zA-Z0-9]
+
+variablelist :=
+  variable | variable , variablelist
+
+node :=
+  NODE variable | variable variable
+
+nodelist :=
+  node | node , nodelist
+
+property :=
+  variable . variable = value |
+  variable -> variable AS value |
+  variable -> variable ? |
+  variable -> variable ? AS value |
+
+wherepropertylist :=
+  property | property AND propertylist
+
+setpropertylist :=
+  property | property , propertylist
+
+select :=
+  SELECT nodelist set |
+  SELECT nodelist return |
+  SELECT nodelist where set |
+  SELECT nodelist where return |
+
+create :=
+  CREATE nodelist |
+  CREATE nodelist set
+
+where :=
+  WHERE wherepropertylist
+
+set :=
+  SET setpropertylist
+
+return :=
+  RETURN variablelist
+
+=====================================================================================
+================================= INSTRUCTIONS ======================================
+
+
 
 =====================================================================================

@@ -42,12 +42,12 @@ char* nuonReadLine (FILE* f) {
   buf = malloc(bufsize + 1);
   memset(buf, 0, bufsize + 1);
 
-  while ( (c = fgetc(f)) != EOF ) {
-    if ( i == bufsize ) {
+  while ((c = fgetc(f)) != EOF) {
+    if (i == bufsize) {
       buf = realloc(buf, (bufsize += 10) + 1);
     }
     buf[i++] = (unsigned char)c;
-    if ( buf[i - 1] == '\n' ) {
+    if (buf[i - 1] == '\n') {
       break;
     }
   }
