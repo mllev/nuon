@@ -7,33 +7,33 @@ sql-like graph query language:
 -- creates 2 nodes labeled "person"
 -- connect p and q by an edge labeled "knows"
 
-CREATE person p, movie m SET p.name = "Matthew", p.age = 25, m.title = "Fight Club", p -> q AS "favorite film"
+CREATE person p, movie m SET p.name = "Matthew", p.age = "25", m.title = "Fight Club", p -> q AS "favorite film"
 
 -- returns all nodes with label "person"
 -- each row is a single person record
--- row 1: {name: "Matthew", age: 25}
+-- row 1: {"name": "Matthew", "age": "25"}
 
 SELECT person p RETURN p
 
 -- returns all nodes with label "person", and all nodes with label "movie"
 -- this is equivalent to a cross join from p to m
 -- in a graph with 2 people, and two movies, the return would look like this
--- row 1: [{name: "Matthew", age: 25}, {title: "Fight Club"}]
--- row 2: [{name: "Matthew", age: 25}, {title: "The Breakfast Club"}]
--- row 3: [{name: "Jordan", age: 23}, {title: "Fight Club"}]
--- row 4: [{name: "Jordan", age: 23}, {title: "The Breakfast Club"}]
+-- row 1: [{"name": "Matthew", "age": "25"}, {"title": "Fight Club"}]
+-- row 2: [{"name": "Matthew", "age": "25"}, {"title": "The Breakfast Club"}]
+-- row 3: [{"name": "Jordan", "age": "23"}, {"title": "Fight Club"}]
+-- row 4: [{"name": "Jordan", "age": "23"}, {"title": "The Breakfast Club"}]
 
-SELECT person p, movie m RETURN p, q
+SELECT person p, movie m RETURN p, m
 
 -- returns all nodes with label "person"
 -- same as above, except no movie details are returned
 -- this is to further demonstrate the cross join semantics here
 -- this is equivalent to a cross join from p to m
 -- in a graph with 2 people, and two movies, the return would look like this
--- row 1: [{name: "Matthew", age: 25}]
--- row 2: [{name: "Matthew", age: 25}]
--- row 3: [{name: "Jordan", age: 23}]
--- row 4: [{name: "Jordan", age: 23}]
+-- row 1: [{"name": "Matthew", "age": "25"}]
+-- row 2: [{"name": "Matthew", "age": "25"}]
+-- row 3: [{"name": "Jordan", "age": "23"}]
+-- row 4: [{"name": "Jordan", "age": "23"}]
 
 SELECT person p, movie m RETURN p
 
@@ -58,7 +58,7 @@ SELECT person p, movie m, oscar o WHERE p.name = "Matthew" AND p -> m AND m -> o
 -- return all nodes labeled "person" with a property "name" valued "matthew" and resolve any edges labeled "favorite film", regardless of node label
 -- another inner join, except a node with any label is accepted
 -- in a graph with 2 people, 1 of which has an edge labeled "favorite film", the return would look like this
--- row 1: [{name: "Matthew", age: 25}, {title: "Fight Club"}]
+-- row 1: [{"name": "Matthew", "age": "25"}, {"title": "Fight Club"}]
 
 SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n AS "favorite film" RETURN p, n
 
@@ -69,8 +69,8 @@ SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n RETURN p, n
 -- same as above, except the relationship is optional (note the ?)
 -- this makes it a left outer join
 -- in a graph with 2 people, 1 of which has an edge labeled "favorite film", the return would look like this
--- row 1: [{name: "Matthew", age: 25}, {title: "Fight Club"}]
--- row 2: [{name: "Jordan", age: 23}]
+-- row 1: [{"name": "Matthew", "age": "25"}, {"title": "Fight Club"}]
+-- row 2: [{"name": "Jordan", "age": 23}]
 
 SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? AS "favorite film" RETURN p, n
 
@@ -79,14 +79,13 @@ SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? AS "favorite film" 
 
 SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? RETURN p, n
 
-
 -- instead of RETURN, SET can be used to update SELECTed nodes
 
 SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? SET p.property = "value", n.property = "value"
 
 ============================= ALL QUERIES (for brevity) =============================
 
-CREATE person p, movie m SET p.name = "Matthew", p.age = 25, m.title = "Fight Club", p -> q AS "favorite film";
+CREATE person p, movie m SET p.name = "Matthew", p.age = "25", m.title = "Fight Club", p -> q AS "favorite film";
 
 SELECT person p RETURN p;
 
@@ -111,31 +110,35 @@ SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? SET p.property = "v
 =====================================================================================
 =================================== TOKENS ==========================================
 
-SELECT NODE WHERE AND SET . , ? = -> RETURN variable value property " ' 
+SELECT NODE WHERE AND SET . , ? = -> RETURN variable value property " '
 
 =====================================================================================
 ================================ GRAMMAR (bnf-ish) ==================================
 
 value :=
-  " [any ascii character] " | ' [any ascii character] '
+  " [any ascii character] " |
+  ' [any ascii character] '
 
 variable :=
   [_a-zA-Z0-9]
 
 variablelist :=
-  variable | variable , variablelist
+  variable                | 
+  variable , variablelist
 
 node :=
-  NODE variable | variable variable
+  NODE variable    | 
+  variable variable
 
 nodelist :=
-  node | node , nodelist
+  node            |
+  node , nodelist
 
 property :=
-  variable . variable = value |
-  variable -> variable AS value |
-  variable -> variable ? |
-  variable -> variable ? AS value |
+  variable . variable = value     |
+  variable -> variable AS value   |
+  variable -> variable ?          |
+  variable -> variable ? AS value 
 
 wherepropertylist :=
   property | property AND propertylist
@@ -144,13 +147,13 @@ setpropertylist :=
   property | property , propertylist
 
 select :=
-  SELECT nodelist set |
-  SELECT nodelist return |
-  SELECT nodelist where set |
-  SELECT nodelist where return |
+  SELECT nodelist set          |
+  SELECT nodelist return       |
+  SELECT nodelist where set    |
+  SELECT nodelist where return 
 
 create :=
-  CREATE nodelist |
+  CREATE nodelist    |
   CREATE nodelist set
 
 where :=
@@ -163,8 +166,9 @@ return :=
   RETURN variablelist
 
 =====================================================================================
-================================= INSTRUCTIONS ======================================
+=================================== PROTOCOL (v1) ===================================
 
-
+Nuon receives text queries via HTTP POST to keep things simple.
+Nuon returns results as valid JSON.
 
 =====================================================================================
