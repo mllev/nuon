@@ -10,18 +10,22 @@ sql-like graph query language:
 CREATE person p, movie m SET p.name = "Matthew", p.age = "25", m.title = "Fight Club", p -> q AS "favorite film"
 
 -- returns all nodes with label "person"
--- each row is a single person record
--- row 1: {"name": "Matthew", "age": "25"}
+-- each row is a single person record:
+
+-- [{"name": "Matthew", "age": "25"}]
 
 SELECT person p RETURN p
 
 -- returns all nodes with label "person", and all nodes with label "movie"
 -- this is equivalent to a cross join from p to m
--- in a graph with 2 people, and two movies, the return would look like this
--- row 1: [{"name": "Matthew", "age": "25"}, {"title": "Fight Club"}]
--- row 2: [{"name": "Matthew", "age": "25"}, {"title": "The Breakfast Club"}]
--- row 3: [{"name": "Jordan", "age": "23"}, {"title": "Fight Club"}]
--- row 4: [{"name": "Jordan", "age": "23"}, {"title": "The Breakfast Club"}]
+-- in a graph with 2 people, and two movies, the return would look like this:
+
+-- [
+--    {"name": "Matthew", "age": "25", "title": "Fight Club"}
+--    {"name": "Matthew", "age": "25", "title": "The Breakfast Club"},
+--    {"name": "Jordan", "age": "23", "title": "Fight Club"},
+--    {"name": "Jordan", "age": "23", "title": "The Breakfast Club"}
+-- ]
 
 SELECT person p, movie m RETURN p, m
 
@@ -29,11 +33,14 @@ SELECT person p, movie m RETURN p, m
 -- same as above, except no movie details are returned
 -- this is to further demonstrate the cross join semantics here
 -- this is equivalent to a cross join from p to m
--- in a graph with 2 people, and two movies, the return would look like this
--- row 1: [{"name": "Matthew", "age": "25"}]
--- row 2: [{"name": "Matthew", "age": "25"}]
--- row 3: [{"name": "Jordan", "age": "23"}]
--- row 4: [{"name": "Jordan", "age": "23"}]
+-- in a graph with 2 people, and two movies, the return would look like this:
+
+-- [
+--    {"name": "Matthew", "age": "25"},
+--    {"name": "Matthew", "age": "25"},
+--    {"name": "Jordan", "age": "23"},
+--    {"name": "Jordan", "age": "23"}
+-- ]
 
 SELECT person p, movie m RETURN p
 
@@ -57,8 +64,9 @@ SELECT person p, movie m, oscar o WHERE p.name = "Matthew" AND p -> m AND m -> o
 
 -- return all nodes labeled "person" with a property "name" valued "matthew" and resolve any edges labeled "favorite film", regardless of node label
 -- another inner join, except a node with any label is accepted
--- in a graph with 2 people, 1 of which has an edge labeled "favorite film", the return would look like this
--- row 1: [{"name": "Matthew", "age": "25"}, {"title": "Fight Club"}]
+-- in a graph with 2 people, 1 of which has an edge labeled "favorite film", the return would look like this:
+
+-- [{"name": "Matthew", "age": "25", "favorite film": {title": "Fight Club"}}]
 
 SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n AS "favorite film" RETURN p, n
 
@@ -68,13 +76,16 @@ SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n RETURN p, n
 
 -- same as above, except the relationship is optional (note the ?)
 -- this makes it a left outer join
--- in a graph with 2 people, 1 of which has an edge labeled "favorite film", the return would look like this
--- row 1: [{"name": "Matthew", "age": "25"}, {"title": "Fight Club"}]
--- row 2: [{"name": "Jordan", "age": 23}]
+-- in a graph with 2 people, 1 of which has an edge labeled "favorite film", the return would look like this:
+
+-- [
+--   {"name": "Matthew", "age": "25", "favorite film": {title": "Fight Club"}},
+--   {"name": "Jordan", "age": 23}
+-- ]
 
 SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? AS "favorite film" RETURN p, n
 
--- same as above, except all edges (if they exist) are resolved
+-- same as above, except all edges labeled (if they exist) are resolved
 -- another left outer join
 
 SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? RETURN p, n
@@ -170,5 +181,7 @@ return :=
 
 Nuon receives text queries via HTTP POST to keep things simple.
 Nuon returns results as valid JSON.
+
+A relational "row" is equivalent to a single JSON "object".
 
 =====================================================================================
