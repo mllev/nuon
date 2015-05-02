@@ -7,7 +7,7 @@ sql-like graph query language:
 -- creates 2 nodes labeled "person"
 -- connect p and q by an edge labeled "knows"
 
-CREATE person p, movie m SET p.name = "Matthew", p.age = "25", m.title = "Fight Club", p -> q AS "favorite film"
+CREATE person p, movie m SET p.name = "Matthew", p.age = "25", m.title = "Fight Club", p -> q = "favorite film"
 
 -- returns all nodes with label "person"
 -- each row is a single person record:
@@ -51,16 +51,16 @@ SELECT person p, movie m WHERE p.name = "Matthew" AND m.title = "Fight Club" RET
 -- return all nodes labeled "person" with a property "name" valued "matthew" that have an edge labeled "favorite film" to a node labeled "movie"
 -- this is equivalent to an inner join of node types "person" and "movie" on "favorite film"
 
-SELECT person p, movie m WHERE p.name = "Matthew" AND p -> m AS "favorite film" RETURN p, m
+SELECT person p -> movie m WHERE p.name = "Matthew" AND p -> m = "favorite film" RETURN p, m
 
 -- return all nodes labeled "person" with a property "name" valued "matthew" that have an edge to a node labeled "movie"
 -- same as above except the edge between "person" and "movie" can have any label
 
-SELECT person p, movie m WHERE p.name = "Matthew" AND p -> m RETURN p, m
+SELECT person p -> movie m WHERE p.name = "Matthew" RETURN p, m
 
 -- return all nodes labeled "person" with a property "name" valued "matthew" that have an edge to a node labeled "movie" that have an edge to a node labeled "oscar"
 
-SELECT person p, movie m, oscar o WHERE p.name = "Matthew" AND p -> m AND m -> o RETURN p, m, o
+SELECT person p -> movie m -> oscar o WHERE p.name = "Matthew" RETURN p, m, o
 
 -- return all nodes labeled "person" with a property "name" valued "matthew" and resolve any edges labeled "favorite film", regardless of node label
 -- another inner join, except a node with any label is accepted
@@ -68,11 +68,11 @@ SELECT person p, movie m, oscar o WHERE p.name = "Matthew" AND p -> m AND m -> o
 
 -- [{"name": "Matthew", "age": "25", "favorite film": {title": "Fight Club"}}]
 
-SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n AS "favorite film" RETURN p, n
+SELECT person p -> NODE n WHERE p.name = "Matthew" AND p -> n = "favorite film" RETURN p, n
 
 -- same as above, except all edges are resolved, regardless of label
 
-SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n RETURN p, n
+SELECT person p -> NODE n WHERE p.name = "Matthew" RETURN p, n
 
 -- same as above, except the relationship is optional (note the ?)
 -- this makes it a left outer join
@@ -83,40 +83,44 @@ SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n RETURN p, n
 --   {"name": "Jordan", "age": 23}
 -- ]
 
-SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? AS "favorite film" RETURN p, n
+SELECT person p -> NODE n ? WHERE p.name = "Matthew" AND p -> n = "favorite film" RETURN p, n
 
 -- same as above, except all edges labeled (if they exist) are resolved
 -- another left outer join
 
-SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? RETURN p, n
+SELECT person p -> NODE n ? WHERE p.name = "Matthew" RETURN p, n
 
 -- instead of RETURN, SET can be used to update SELECTed nodes
 
-SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? SET p.property = "value", n.property = "value"
+SELECT person p -> NODE n ? WHERE p.name = "Matthew" SET p.property = "value", n.property = "value"
 
 ============================= ALL QUERIES (for brevity) =============================
 
-CREATE person p, movie m SET p.name = "Matthew", p.age = "25", m.title = "Fight Club", p -> q AS "favorite film";
+CREATE person p, movie m SET p.name = "Matthew", p.age = "25", m.title = "Fight Club", p -> q = "favorite film"
 
-SELECT person p RETURN p;
+SELECT person p RETURN p
 
-SELECT person p, movie m WHERE p.name = "Matthew" AND m.title = "Fight Club" RETURN p, m;
+SELECT person p, movie m RETURN p, m
 
-SELECT person p, movie m WHERE p.name = "Matthew" AND p -> m AS "favorite film" RETURN p, m;
+SELECT person p, movie m RETURN p
 
-SELECT person p, movie m WHERE p.name = "Matthew" AND p -> m RETURN p, m;
+SELECT person p, movie m WHERE p.name = "Matthew" AND m.title = "Fight Club" RETURN p, m
 
-SELECT person p, movie m, oscar o WHERE p.name = "Matthew" AND p -> m AND m -> o RETURN p, m, o;
+SELECT person p -> movie m WHERE p.name = "Matthew" AND p -> m = "favorite film" RETURN p, m
 
-SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n AS "favorite film" RETURN p, n;
+SELECT person p -> movie m WHERE p.name = "Matthew" RETURN p, m
 
-SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n RETURN p, n;
+SELECT person p -> movie m -> oscar o WHERE p.name = "Matthew" RETURN p, m, o
 
-SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? AS "favorite film" RETURN p, n;
+SELECT person p -> NODE n WHERE p.name = "Matthew" AND p -> n = "favorite film" RETURN p, n
 
-SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? RETURN p, n;
+SELECT person p -> NODE n WHERE p.name = "Matthew" RETURN p, n
 
-SELECT person p, NODE n WHERE p.name = "Matthew" AND p -> n? SET p.property = "value", n.property = "value";
+SELECT person p -> NODE n ? WHERE p.name = "Matthew" AND p -> n = "favorite film" RETURN p, n
+
+SELECT person p -> NODE n ? WHERE p.name = "Matthew" RETURN p, n
+
+SELECT person p -> NODE n ? WHERE p.name = "Matthew" SET p.property = "value", n.property = "value"
 
 =====================================================================================
 =================================== TOKENS ==========================================
@@ -138,18 +142,24 @@ variablelist :=
   variable , variablelist
 
 node :=
-  NODE variable    | 
-  variable variable
+  NODE variable       | 
+  variable variable   
 
 nodelist :=
+  node                      |
+  node -> node              |
+  node -> node ?            |
+  node , nodelist           |
+  node -> node , nodelist   |
+  node -> node ? , nodelist 
+
+createnodelist :=
   node            |
-  node , nodelist
+  node , createnodelist
 
 property :=
   variable . variable = value     |
-  variable -> variable AS value   |
-  variable -> variable ?          |
-  variable -> variable ? AS value 
+  variable -> variable = value   
 
 wherepropertylist :=
   property | property AND propertylist
@@ -164,8 +174,8 @@ select :=
   SELECT nodelist where return 
 
 create :=
-  CREATE nodelist    |
-  CREATE nodelist set
+  CREATE createnodelist    |
+  CREATE createnodelist set
 
 where :=
   WHERE wherepropertylist
