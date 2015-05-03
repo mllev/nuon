@@ -31,6 +31,34 @@
 #ifndef _QUERY_H
 #define _QUERY_H
 
-char* nuonReadLine (FILE*);
+typedef struct token Token;
+typedef enum symbol Symbol;
+
+enum symbol {
+  create_sym, return_sym, node_sym, 
+  set_sym,    where_sym,  and_sym, 
+  select_sym, period,     comma,
+  qmark,      equals,     ident,
+  string,     arrow
+};
+
+struct token {
+  Symbol sym;
+  unsigned char* data;
+};
+
+#define NUON_CMP(x, y, z) strncmp((const char *)x, (const char *)y, z)
+
+#define NUON_IS_CREATE_TOK(x) !NUON_CMP(x, "CREATE", 6) || !NUON_CMP(x, "create", 6)
+#define NUON_IS_SELECT_TOK(x) !NUON_CMP(x, "SELECT", 6) || !NUON_CMP(x, "select", 6)
+#define NUON_IS_RETURN_TOK(x) !NUON_CMP(x, "RETURN", 6) || !NUON_CMP(x, "return", 6)
+#define NUON_IS_NODE_TOK(x)   !NUON_CMP(x, "NODE", 4)   || !NUON_CMP(x, "node", 4)
+#define NUON_IS_SET_TOK(x)    !NUON_CMP(x, "SET", 3)    || !NUON_CMP(x, "set", 3)
+#define NUON_IS_WHERE_TOK(x)  !NUON_CMP(x, "WHERE", 5)  || !NUON_CMP(x, "where", 5)
+#define NUON_IS_AND_TOK(x)    !NUON_CMP(x, "AND", 3)    || !NUON_CMP(x, "and", 3)
+#define NUON_IS_ARROW_TOK(x)  !NUON_CMP(x, "->", 2) 
+
+unsigned char*  nuonReadLine      (FILE*);
+Token*          nuonNextToken     (unsigned char**);
 
 #endif

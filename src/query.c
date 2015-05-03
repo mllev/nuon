@@ -35,7 +35,98 @@
 
 #include "query.h"
 
-char* nuonReadLine (FILE* f) {
+Token* nuonNextToken (unsigned char** i)
+{
+  Token* token = malloc(sizeof(Token));
+  token->data = NULL;
+
+  while (**i && (**i == ' ' || **i == '\n' || **i == '\t')) {
+    (*i)++;
+  }
+
+  switch (**i) {
+    case '.':
+      (*i)++;
+      token->sym = period;
+      break;
+    case '=':
+      (*i)++;
+      token->sym = equals;
+      break;
+    case ',':
+      (*i)++;
+      token->sym = comma;
+      break;
+    case '?':
+      (*i)++;
+      token->sym = qmark;
+      break;
+    case '"':
+      do {
+        unsigned char* str = malloc(1024);
+        int j = 0;
+
+        (*i)++;
+
+        while ( **i != '"' && j < 1024 ) {
+          str[j++] = *((*i)++);
+          if ( *((*i) - 1) == '\\' ) {
+            str[j - 1] = *((*i)++);
+          }
+        }
+
+        str[j] = 0;
+        (*i)++;
+        token->sym = string;
+        token->data = str;
+      } while (0);
+      break;
+    default:
+      if (NUON_IS_CREATE_TOK(*i)) {
+        token->sym = create_sym;
+        (*i) += 6;
+      } else if (NUON_IS_SET_TOK(*i)) {
+        token->sym = set_sym;
+        (*i) += 3;
+      } else if (NUON_IS_SELECT_TOK(*i)) {
+        token->sym = select_sym;
+        (*i) += 6;
+      } else if (NUON_IS_RETURN_TOK(*i)) {
+        token->sym = return_sym;
+        (*i) += 6;
+      } else if (NUON_IS_WHERE_TOK(*i)) {
+        token->sym = where_sym;
+        (*i) += 5;
+      } else if (NUON_IS_AND_TOK(*i)) {
+        token->sym = and_sym;
+        (*i) += 3;
+      } else if (NUON_IS_NODE_TOK(*i)) {
+        token->sym = node_sym;
+        (*i) += 4;
+      } else if (NUON_IS_ARROW_TOK(*i)) {
+        token->sym = arrow;
+        (*i) += 2;
+      } else if ((**i >= 65 && **i <= 90) || (**i >= 97 && **i <= 122)) {
+        unsigned char* str = malloc(1024);
+        int j = 0;
+
+        while ( ((**i >= 65 && **i <= 90) || (**i >= 97 && **i <= 122)) && j < 1024) {
+          str[j++] = *((*i)++);
+        }
+
+        str[j] = 0;
+        token->sym = ident;
+        token->data = str;
+      } else {
+        token = NULL;
+      }
+      break;
+  }
+
+  return token;
+}
+
+unsigned char* nuonReadLine (FILE* f) {
   unsigned char* buf = NULL;
   int c = 0, i = 0, bufsize = 10;
 
@@ -53,15 +144,20 @@ char* nuonReadLine (FILE* f) {
   }
 
   buf[i] = 0;
-  return (char *)buf;
+  return buf;
 }
 
 int main (void) {
-  char* line;
+  unsigned char *line, *l;
+  Token* t;
+
   while (1) {
     printf("nuon> ");
     line = nuonReadLine((FILE* )stdin);
-    puts(line);
+    l = line;
+    while ((t = nuonNextToken(&l))) {
+      printf("%d %s\n", t->sym, t->data);
+    }
     free(line);
   }
 }
