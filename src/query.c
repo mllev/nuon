@@ -157,6 +157,7 @@ int main (void) {
     l = line;
     while ((t = nuonNextToken(&l))) {
       printf("%d %s\n", t->sym, t->data);
+      free(t);
     }
     free(line);
   }
