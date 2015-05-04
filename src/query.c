@@ -35,10 +35,10 @@
 
 #include "query.h"
 
-Token* nuonNextToken (unsigned char** i)
+nToken_t* nuonNextToken (unsigned char** i)
 {
-  Token* token = malloc(sizeof(Token));
-  token->data = NULL;
+  nToken_t* tok = malloc(sizeof(nToken_t));
+  tok->data = NULL;
 
   while (**i && (**i == ' ' || **i == '\n' || **i == '\t')) {
     (*i)++;
@@ -47,19 +47,19 @@ Token* nuonNextToken (unsigned char** i)
   switch (**i) {
     case '.':
       (*i)++;
-      token->sym = period;
+      tok->sym = period;
       break;
     case '=':
       (*i)++;
-      token->sym = equals;
+      tok->sym = equals;
       break;
     case ',':
       (*i)++;
-      token->sym = comma;
+      tok->sym = comma;
       break;
     case '?':
       (*i)++;
-      token->sym = qmark;
+      tok->sym = qmark;
       break;
     case '"':
       do {
@@ -77,34 +77,34 @@ Token* nuonNextToken (unsigned char** i)
 
         str[j] = 0;
         (*i)++;
-        token->sym = string;
-        token->data = str;
+        tok->sym = string;
+        tok->data = str;
       } while (0);
       break;
     default:
-      if (NUON_IS_CREATE_TOK(*i)) {
-        token->sym = create_sym;
+      if (NUON_IS_CREATE_SYM(*i)) {
+        tok->sym = create_sym;
         (*i) += 6;
-      } else if (NUON_IS_SET_TOK(*i)) {
-        token->sym = set_sym;
+      } else if (NUON_IS_SET_SYM(*i)) {
+        tok->sym = set_sym;
         (*i) += 3;
-      } else if (NUON_IS_SELECT_TOK(*i)) {
-        token->sym = select_sym;
+      } else if (NUON_IS_SELECT_SYM(*i)) {
+        tok->sym = select_sym;
         (*i) += 6;
-      } else if (NUON_IS_RETURN_TOK(*i)) {
-        token->sym = return_sym;
+      } else if (NUON_IS_RETURN_SYM(*i)) {
+        tok->sym = return_sym;
         (*i) += 6;
-      } else if (NUON_IS_WHERE_TOK(*i)) {
-        token->sym = where_sym;
+      } else if (NUON_IS_WHERE_SYM(*i)) {
+        tok->sym = where_sym;
         (*i) += 5;
-      } else if (NUON_IS_AND_TOK(*i)) {
-        token->sym = and_sym;
+      } else if (NUON_IS_AND_SYM(*i)) {
+        tok->sym = and_sym;
         (*i) += 3;
-      } else if (NUON_IS_NODE_TOK(*i)) {
-        token->sym = node_sym;
+      } else if (NUON_IS_NODE_SYM(*i)) {
+        tok->sym = node_sym;
         (*i) += 4;
-      } else if (NUON_IS_ARROW_TOK(*i)) {
-        token->sym = arrow;
+      } else if (NUON_IS_ARROW_SYM(*i)) {
+        tok->sym = arrow;
         (*i) += 2;
       } else if ((**i >= 65 && **i <= 90) || (**i >= 97 && **i <= 122)) {
         unsigned char* str = malloc(1024);
@@ -115,15 +115,15 @@ Token* nuonNextToken (unsigned char** i)
         }
 
         str[j] = 0;
-        token->sym = ident;
-        token->data = str;
+        tok->sym = ident;
+        tok->data = str;
       } else {
-        token = NULL;
+        tok = NULL;
       }
       break;
   }
 
-  return token;
+  return tok;
 }
 
 unsigned char* nuonReadLine (FILE* f) {
@@ -149,7 +149,7 @@ unsigned char* nuonReadLine (FILE* f) {
 
 int main (void) {
   unsigned char *line, *l;
-  Token* t;
+  nToken_t* t;
 
   while (1) {
     printf("nuon> ");
