@@ -34,9 +34,9 @@
 
 #include "query.h"
 
-nuonToken_t* nuonNextToken (unsigned char** i)
+nuonToken* nuonNextToken (unsigned char** i)
 {
-  nuonToken_t* tok = malloc(sizeof(nuonToken_t));
+  nuonToken* tok = malloc(sizeof(nuonToken));
   tok->data = NULL;
 
   while (**i && (**i == ' ' || **i == '\n' || **i == '\t')) {
@@ -122,37 +122,49 @@ nuonToken_t* nuonNextToken (unsigned char** i)
       break;
   }
 
+  if (tok) {
+    printf("%d %s\n", tok->sym, tok->data);
+  }
+  
   return tok;
 }
 
-void nuonParseError (nuonState_t* state)
+void nuonParseError (nuonState* state)
 {
   return;
 }
 
-int nuonAccept (nuonState_t* state)
+int nuonAccept (nuonState* state, nuonSymbol s)
 {
   return 0;
 }
 
-int nuonExpect (nuonState_t* state)
+int nuonExpect (nuonState* state, nuonSymbol s)
 {
   return 0;
 }
 
-int nuonPeek (nuonState_t* state)
+int nuonPeek (nuonState* state, nuonSymbol s)
 {
   return 0;
+}
+
+void nuonGetSym (nuonState* state)
+{
+  if (state->tok) {
+    free(state->tok);
+  }
+  state->tok = nuonNextToken(state->prog);
 }
 
 void nuonParse (unsigned char** prog)
 {
-  nuonState_t* state = malloc(sizeof(nuonState_t));
+  nuonState* state = malloc(sizeof(nuonState));
   state->prog = prog;
+  nuonGetSym(state);
 
-  while ((state->tok = nuonNextToken(state->prog))) {
-    printf("%d %s\n", state->tok->sym, state->tok->data);
-    free(state->tok);
+  while (state->tok) {
+    nuonGetSym(state);
   }
 }
 

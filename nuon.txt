@@ -7,7 +7,7 @@ sql-like graph query language:
 -- creates 2 nodes labeled "person"
 -- connect p and q by an edge labeled "knows"
 
-CREATE person p, movie m SET p.name = "Matthew", p.age = "25", m.title = "Fight Club", p -> q = "favorite film"
+CREATE person p, movie m SET p.name = "Matthew", p.age = "25", m.title = "Fight Club", p -> m = "favorite film"
 
 -- returns all nodes with label "person"
 -- each row is a single person record:
@@ -96,7 +96,7 @@ SELECT person p -> NODE n ? WHERE p.name = "Matthew" SET p.property = "value", n
 
 ============================= ALL QUERIES (for brevity) =============================
 
-CREATE person p, movie m SET p.name = "Matthew", p.age = "25", m.title = "Fight Club", p -> q = "favorite film"
+CREATE person p, movie m SET p.name = "Matthew", p.age = "25", m.title = "Fight Club", p -> m = "favorite film"
 
 SELECT person p RETURN p
 
