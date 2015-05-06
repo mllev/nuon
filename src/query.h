@@ -31,10 +31,11 @@
 #ifndef _QUERY_H
 #define _QUERY_H
 
-typedef struct token nToken_t;
-typedef enum symbol  nSymbol_t;
+typedef struct nuonToken nuonToken_t;
+typedef enum nuonSymbol  nuonSymbol_t;
+typedef struct nuonState nuonState_t;
 
-enum symbol {
+enum nuonSymbol {
   create_sym, return_sym, node_sym, 
   set_sym,    where_sym,  and_sym, 
   select_sym, period,     comma,
@@ -42,9 +43,14 @@ enum symbol {
   string,     arrow
 };
 
-struct token {
-  nSymbol_t      sym;
+struct nuonToken {
+  nuonSymbol_t      sym;
   unsigned char* data;
+};
+
+struct nuonState {
+  nuonToken_t* tok;
+  unsigned char** prog;
 };
 
 #define NUON_CMP(x, y, z) strncmp((const char *)x, (const char *)y, z)
@@ -59,6 +65,10 @@ struct token {
 #define NUON_IS_ARROW_SYM(x)  !NUON_CMP(x, "->", 2) 
 
 unsigned char*  nuonReadLine      (FILE*);
-nToken_t*       nuonNextToken     (unsigned char**);
+nuonToken_t*       nuonNextToken     (unsigned char**);
+void            nuonParse         (unsigned char**);
+int             nuonAccept        (nuonState_t* state);
+int             nuonExpect        (nuonState_t* state);
+int             nuonPeek          (nuonState_t* state);
 
 #endif

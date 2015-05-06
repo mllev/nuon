@@ -28,16 +28,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
 #include "query.h"
 
-nToken_t* nuonNextToken (unsigned char** i)
+nuonToken_t* nuonNextToken (unsigned char** i)
 {
-  nToken_t* tok = malloc(sizeof(nToken_t));
+  nuonToken_t* tok = malloc(sizeof(nuonToken_t));
   tok->data = NULL;
 
   while (**i && (**i == ' ' || **i == '\n' || **i == '\t')) {
@@ -126,7 +125,39 @@ nToken_t* nuonNextToken (unsigned char** i)
   return tok;
 }
 
-unsigned char* nuonReadLine (FILE* f) {
+void nuonParseError (nuonState_t* state)
+{
+  return;
+}
+
+int nuonAccept (nuonState_t* state)
+{
+  return 0;
+}
+
+int nuonExpect (nuonState_t* state)
+{
+  return 0;
+}
+
+int nuonPeek (nuonState_t* state)
+{
+  return 0;
+}
+
+void nuonParse (unsigned char** prog)
+{
+  nuonState_t* state = malloc(sizeof(nuonState_t));
+  state->prog = prog;
+
+  while ((state->tok = nuonNextToken(state->prog))) {
+    printf("%d %s\n", state->tok->sym, state->tok->data);
+    free(state->tok);
+  }
+}
+
+unsigned char* nuonReadLine (FILE* f)
+{
   unsigned char* buf = NULL;
   int c = 0, i = 0, bufsize = 10;
 
@@ -147,18 +178,14 @@ unsigned char* nuonReadLine (FILE* f) {
   return buf;
 }
 
-int main (void) {
+int main (void)
+{
   unsigned char *line, *l;
-  nToken_t* t;
 
   while (1) {
     printf("nuon> ");
-    line = nuonReadLine((FILE* )stdin);
-    l = line;
-    while ((t = nuonNextToken(&l))) {
-      printf("%d %s\n", t->sym, t->data);
-      free(t);
-    }
-    free(line);
+    l = line = nuonReadLine((FILE* )stdin);
+    nuonParse(&line);
+    free(l);
   }
 }
