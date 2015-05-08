@@ -73,7 +73,7 @@ struct nuonState {
 #define NUON_IS_WHERE_SYM(x)  !NUON_CMP(x, "WHERE", 5)  || !NUON_CMP(x, "where", 5)
 #define NUON_IS_AND_SYM(x)    !NUON_CMP(x, "AND", 3)    || !NUON_CMP(x, "and", 3)
 #define NUON_IS_ARROW_SYM(x)  !NUON_CMP(x, "->", 2) 
-
+ 
 /* internal API */
 unsigned char*  nuonReadLine             (FILE*);
 nuonToken*      nuonNextToken            (unsigned char**);
