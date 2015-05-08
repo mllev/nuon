@@ -43,17 +43,27 @@ enum nuonSymbol {
   string,     arrow
 };
 
+const char* nuonSymstr[] = {
+  "create", "return", "node",
+  "set",    "where",  "and",
+  "select", ".",      ",",
+  "?",      "=",      "identifier",
+  "string", "->"
+};
+
 struct nuonToken {
-  nuonSymbol      sym;
+  nuonSymbol     sym;
   unsigned char* data;
 };
 
 struct nuonState {
-  nuonToken* tok;
+  nuonToken*      tok;
   unsigned char** prog;
+  int             err;
 };
 
 #define NUON_CMP(x, y, z) strncmp((const char *)x, (const char *)y, z)
+#define NUON_HANDLE_ERR(x) if (x->err) return
 
 #define NUON_IS_CREATE_SYM(x) !NUON_CMP(x, "CREATE", 6) || !NUON_CMP(x, "create", 6)
 #define NUON_IS_SELECT_SYM(x) !NUON_CMP(x, "SELECT", 6) || !NUON_CMP(x, "select", 6)
@@ -64,12 +74,20 @@ struct nuonState {
 #define NUON_IS_AND_SYM(x)    !NUON_CMP(x, "AND", 3)    || !NUON_CMP(x, "and", 3)
 #define NUON_IS_ARROW_SYM(x)  !NUON_CMP(x, "->", 2) 
 
-unsigned char*  nuonReadLine      (FILE*);
-nuonToken*      nuonNextToken     (unsigned char**);
-void            nuonParse         (unsigned char**);
-int             nuonAccept        (nuonState*, nuonSymbol);
-int             nuonExpect        (nuonState*, nuonSymbol);
-int             nuonPeek          (nuonState*, nuonSymbol);
-void            nuonGetSym        (nuonState*);
+/* internal API */
+unsigned char*  nuonReadLine             (FILE*);
+nuonToken*      nuonNextToken            (unsigned char**);
+void            nuonParse                (unsigned char**);
+int             nuonAccept               (nuonState*, nuonSymbol);
+int             nuonExpect               (nuonState*, nuonSymbol);
+int             nuonPeek                 (nuonState*, nuonSymbol);
+void            nuonGetSym               (nuonState*);
+void            nuonParseError           (nuonState*, const char*, const char*);
+void            nuonParseNode            (nuonState*); 
+void            nuonParseProperty        (nuonState*);
+void            nuonParseSetPropertyList (nuonState*);
+void            nuonParseSet             (nuonState*);
+void            nuonParseCreateNodeList  (nuonState*);
+void            nuonParseCreate          (nuonState*);
 
 #endif

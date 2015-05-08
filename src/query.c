@@ -117,35 +117,61 @@ nuonToken* nuonNextToken (unsigned char** i)
         tok->sym = ident;
         tok->data = str;
       } else {
+        free(tok);
         tok = NULL;
       }
       break;
-  }
-
-  if (tok) {
-    printf("%d %s\n", tok->sym, tok->data);
   }
   
   return tok;
 }
 
-void nuonParseError (nuonState* state)
+void nuonParseError (nuonState* state, const char* err, const char* s)
 {
+  fprintf(stderr, "error: %s - %s\n", err, s);
+  state->err = 1;
   return;
 }
 
 int nuonAccept (nuonState* state, nuonSymbol s)
 {
+  if (state->tok && state->tok->sym == s)  {
+    nuonGetSym(state);
+    return 1;
+  }
+
   return 0;
 }
 
 int nuonExpect (nuonState* state, nuonSymbol s)
 {
+  if (nuonAccept(state, s)) {
+    return 1;
+  }
+
+  if (state->tok) {
+    nuonParseError(
+      state, 
+      "unexpected symbol", 
+      nuonSymstr[state->tok->sym]
+    );
+  } else {
+    nuonParseError(
+      state,
+      "expected symbol", 
+      nuonSymstr[s]
+    );
+  }
+
   return 0;
 }
 
 int nuonPeek (nuonState* state, nuonSymbol s)
 {
+  if (state->tok && state->tok->sym == s) {
+    return 1;
+  }
+
   return 0;
 }
 
@@ -157,14 +183,77 @@ void nuonGetSym (nuonState* state)
   state->tok = nuonNextToken(state->prog);
 }
 
+void nuonParseNode (nuonState* state) 
+{
+  NUON_HANDLE_ERR(state);
+
+  if (!nuonAccept(state, ident)) {
+    nuonExpect(state, node_sym);
+  }
+  nuonExpect(state, ident);
+}
+
+void nuonParseProperty (nuonState* state)
+{
+  NUON_HANDLE_ERR(state);
+
+  nuonExpect(state, ident);
+  if (!nuonAccept(state, period)) {
+    nuonExpect(state, arrow);
+  }
+  nuonExpect(state, ident);
+  nuonExpect(state, equals);
+  nuonExpect(state, string);
+}
+
+void nuonParseSetPropertyList (nuonState* state)
+{
+  NUON_HANDLE_ERR(state);
+
+  nuonParseProperty(state);
+  if (nuonAccept(state, comma)) {
+    nuonParseSetPropertyList(state);
+  }
+}
+
+void nuonParseSet (nuonState* state)
+{
+  NUON_HANDLE_ERR(state);
+
+  nuonExpect(state, set_sym);
+  nuonParseSetPropertyList(state);
+}
+
+void nuonParseCreateNodeList (nuonState* state)
+{
+  NUON_HANDLE_ERR(state);
+
+  nuonParseNode(state);
+  if (nuonAccept(state, comma)) {
+    nuonParseCreateNodeList(state);
+  }
+}
+
+void nuonParseCreate (nuonState* state)
+{
+  NUON_HANDLE_ERR(state);
+
+  nuonExpect(state, create_sym);
+  nuonParseCreateNodeList(state);
+  if (nuonPeek(state, set_sym)) {
+    nuonParseSet(state);
+  }
+}
+
 void nuonParse (unsigned char** prog)
 {
   nuonState* state = malloc(sizeof(nuonState));
   state->prog = prog;
+  state->err = 0;
   nuonGetSym(state);
 
-  while (state->tok) {
-    nuonGetSym(state);
+  if (nuonPeek(state, create_sym)) {
+    nuonParseCreate(state);
   }
 }
 
