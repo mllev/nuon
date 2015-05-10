@@ -34,10 +34,17 @@
 
 #include "query.h"
 
-nuonToken* nuonNextToken (unsigned char** i)
+void nuonNextToken (nuonState* state)
 {
-  nuonToken* tok = malloc(sizeof(nuonToken));
-  tok->data = NULL;
+  unsigned char** i = state->prog;
+  state->tok = malloc(sizeof(nuonToken));
+
+  if (!state->tok) {
+    state->tok = NULL;
+    return;
+  }
+
+  state->tok->data = NULL;
 
   while (**i && (**i == ' ' || **i == '\n' || **i == '\t')) {
     (*i)++;
@@ -46,19 +53,19 @@ nuonToken* nuonNextToken (unsigned char** i)
   switch (**i) {
     case '.':
       (*i)++;
-      tok->sym = period;
+      state->tok->sym = period;
       break;
     case '=':
       (*i)++;
-      tok->sym = equals;
+      state->tok->sym = equals;
       break;
     case ',':
       (*i)++;
-      tok->sym = comma;
+      state->tok->sym = comma;
       break;
     case '?':
       (*i)++;
-      tok->sym = qmark;
+      state->tok->sym = qmark;
       break;
     case '"':
       do {
@@ -76,34 +83,34 @@ nuonToken* nuonNextToken (unsigned char** i)
 
         str[j] = 0;
         (*i)++;
-        tok->sym = string;
-        tok->data = str;
+        state->tok->sym = string;
+        state->tok->data = str;
       } while (0);
       break;
     default:
       if (NUON_IS_CREATE_SYM(*i)) {
-        tok->sym = create_sym;
+        state->tok->sym = create_sym;
         (*i) += 6;
       } else if (NUON_IS_SET_SYM(*i)) {
-        tok->sym = set_sym;
+        state->tok->sym = set_sym;
         (*i) += 3;
       } else if (NUON_IS_SELECT_SYM(*i)) {
-        tok->sym = select_sym;
+        state->tok->sym = select_sym;
         (*i) += 6;
       } else if (NUON_IS_RETURN_SYM(*i)) {
-        tok->sym = return_sym;
+        state->tok->sym = return_sym;
         (*i) += 6;
       } else if (NUON_IS_WHERE_SYM(*i)) {
-        tok->sym = where_sym;
+        state->tok->sym = where_sym;
         (*i) += 5;
       } else if (NUON_IS_AND_SYM(*i)) {
-        tok->sym = and_sym;
+        state->tok->sym = and_sym;
         (*i) += 3;
       } else if (NUON_IS_NODE_SYM(*i)) {
-        tok->sym = node_sym;
+        state->tok->sym = node_sym;
         (*i) += 4;
       } else if (NUON_IS_ARROW_SYM(*i)) {
-        tok->sym = arrow;
+        state->tok->sym = arrow;
         (*i) += 2;
       } else if ((**i >= 65 && **i <= 90) || (**i >= 97 && **i <= 122)) {
         unsigned char* str = malloc(1024);
@@ -114,27 +121,26 @@ nuonToken* nuonNextToken (unsigned char** i)
         }
 
         str[j] = 0;
-        tok->sym = ident;
-        tok->data = str;
+        state->tok->sym = ident;
+        state->tok->data = str;
       } else {
-        free(tok);
-        tok = NULL;
+        free(state->tok);
+        state->tok = NULL;
       }
       break;
   }
-  
-  return tok;
 }
 
 void nuonParseError (nuonState* state, const char* err, const char* s)
 {
-  fprintf(stderr, "error: %s - %s\n", err, s);
+  fprintf(stderr, "error: %s : %s\n", err, s);
   state->err = 1;
   return;
 }
 
 int nuonAccept (nuonState* state, nuonSymbol s)
 {
+  if (state->err) { return 0; }
   if (state->tok && state->tok->sym == s)  {
     nuonGetSym(state);
     return 1;
@@ -145,22 +151,13 @@ int nuonAccept (nuonState* state, nuonSymbol s)
 
 int nuonExpect (nuonState* state, nuonSymbol s)
 {
-  if (nuonAccept(state, s)) {
-    return 1;
-  }
+  if (state->err) { return 0; }
+  if (nuonAccept(state, s)) { return 1; }
 
   if (state->tok) {
-    nuonParseError(
-      state, 
-      "unexpected symbol", 
-      nuonSymstr[state->tok->sym]
-    );
+    nuonParseError(state, "unexpected symbol", nuonSymstr[state->tok->sym]);
   } else {
-    nuonParseError(
-      state,
-      "expected symbol", 
-      nuonSymstr[s]
-    );
+    nuonParseError(state,"expected symbol", nuonSymstr[s]);
   }
 
   return 0;
@@ -168,6 +165,7 @@ int nuonExpect (nuonState* state, nuonSymbol s)
 
 int nuonPeek (nuonState* state, nuonSymbol s)
 {
+  if (state->err) { return 0; }
   if (state->tok && state->tok->sym == s) {
     return 1;
   }
@@ -177,13 +175,19 @@ int nuonPeek (nuonState* state, nuonSymbol s)
 
 void nuonGetSym (nuonState* state)
 {
+  NUON_HANDLE_ERR(state);
+
   if (state->tok) {
+    if (state->tok->data) {
+      free(state->tok->data);
+    }
     free(state->tok);
+    state->tok = NULL;
   }
-  state->tok = nuonNextToken(state->prog);
+  nuonNextToken(state);
 }
 
-void nuonParseNode (nuonState* state) 
+void nuonParseNode (nuonState* state)
 {
   NUON_HANDLE_ERR(state);
 
@@ -248,13 +252,17 @@ void nuonParseCreate (nuonState* state)
 void nuonParse (unsigned char** prog)
 {
   nuonState* state = malloc(sizeof(nuonState));
+
   state->prog = prog;
   state->err = 0;
+  state->tok = NULL;
   nuonGetSym(state);
 
   if (nuonPeek(state, create_sym)) {
     nuonParseCreate(state);
   }
+
+  free(state);
 }
 
 unsigned char* nuonReadLine (FILE* f)

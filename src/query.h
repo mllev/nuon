@@ -36,8 +36,8 @@ typedef enum nuonSymbol  nuonSymbol;
 typedef struct nuonState nuonState;
 
 enum nuonSymbol {
-  create_sym, return_sym, node_sym, 
-  set_sym,    where_sym,  and_sym, 
+  create_sym, return_sym, node_sym,
+  set_sym,    where_sym,  and_sym,
   select_sym, period,     comma,
   qmark,      equals,     ident,
   string,     arrow
@@ -76,7 +76,7 @@ struct nuonState {
  
 /* internal API */
 unsigned char*  nuonReadLine             (FILE*);
-nuonToken*      nuonNextToken            (unsigned char**);
+void            nuonNextToken            (nuonState* state);
 void            nuonParse                (unsigned char**);
 int             nuonAccept               (nuonState*, nuonSymbol);
 int             nuonExpect               (nuonState*, nuonSymbol);
