@@ -249,6 +249,40 @@ void nuonParseCreate (nuonState* state)
   }
 }
 
+void nuonParseNodeList (nuonState* state) 
+{
+  NUON_HANDLE_ERR(state);
+}
+
+void nuonParseReturn (nuonState* state)
+{
+  NUON_HANDLE_ERR(state);
+}
+
+void nuonParseWhere (nuonState* state) 
+{
+  NUON_HANDLE_ERR(state);
+}
+
+void nuonParseSelect (nuonState* state)
+{
+  NUON_HANDLE_ERR(state);
+
+  nuonExpect(state, select_sym);
+  nuonParseNodeList(state);
+  if (nuonAccept(state, where_sym)) {
+    nuonParseWhere(state);
+  }
+  if (nuonPeek(state, set_sym)) {
+    nuonParseSet(state);
+    return;
+  }
+  if (nuonPeek(state, return_sym)) {
+    nuonParseReturn(state);
+    return;
+  }
+}
+
 void nuonParse (unsigned char** prog)
 {
   nuonState* state = malloc(sizeof(nuonState));
@@ -260,6 +294,8 @@ void nuonParse (unsigned char** prog)
 
   if (nuonPeek(state, create_sym)) {
     nuonParseCreate(state);
+  } else if (nuonPeek(state, select_sym)) {
+    nuonParseSelect(state);
   }
 
   free(state);

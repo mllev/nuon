@@ -89,5 +89,9 @@ void            nuonParseSetPropertyList (nuonState*);
 void            nuonParseSet             (nuonState*);
 void            nuonParseCreateNodeList  (nuonState*);
 void            nuonParseCreate          (nuonState*);
+void            nuonParseNodeList        (nuonState*);
+void            nuonParseReturn          (nuonState*);
+void            nuonParseWhere           (nuonState*);
+void            nuonParseSelect          (nuonState*);
 
 #endif
