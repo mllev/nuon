@@ -252,16 +252,50 @@ void nuonParseCreate (nuonState* state)
 void nuonParseNodeList (nuonState* state) 
 {
   NUON_HANDLE_ERR(state);
+
+  nuonParseNode(state);
+  if (nuonAccept(state, arrow)) {
+    nuonParseNode(state);
+    nuonAccept(state, qmark);
+  }
+  if (nuonAccept(state, comma)) {
+    nuonParseNodeList(state);
+  }
+}
+
+void nuonParseVariableList (nuonState* state)
+{
+  NUON_HANDLE_ERR(state);
+
+  nuonExpect(state, ident);
+  if (nuonAccept(state, comma)) {
+    nuonParseVariableList(state);
+  }
 }
 
 void nuonParseReturn (nuonState* state)
 {
   NUON_HANDLE_ERR(state);
+
+  nuonParseVariableList(state);
+}
+
+void nuonParseWherePropertyList (nuonState* state)
+{
+  NUON_HANDLE_ERR(state);
+
+  nuonParseProperty(state);
+  if (nuonAccept(state, and_sym)) {
+    nuonParseWherePropertyList(state);
+  }
 }
 
 void nuonParseWhere (nuonState* state) 
 {
   NUON_HANDLE_ERR(state);
+
+  nuonExpect(state, where_sym);
+  nuonParseWherePropertyList(state);
 }
 
 void nuonParseSelect (nuonState* state)
@@ -270,7 +304,7 @@ void nuonParseSelect (nuonState* state)
 
   nuonExpect(state, select_sym);
   nuonParseNodeList(state);
-  if (nuonAccept(state, where_sym)) {
+  if (nuonPeek(state, where_sym)) {
     nuonParseWhere(state);
   }
   if (nuonPeek(state, set_sym)) {

@@ -75,23 +75,25 @@ struct nuonState {
 #define NUON_IS_ARROW_SYM(x)  !NUON_CMP(x, "->", 2) 
  
 /* internal API */
-unsigned char*  nuonReadLine             (FILE*);
-void            nuonNextToken            (nuonState* state);
-void            nuonParse                (unsigned char**);
-int             nuonAccept               (nuonState*, nuonSymbol);
-int             nuonExpect               (nuonState*, nuonSymbol);
-int             nuonPeek                 (nuonState*, nuonSymbol);
-void            nuonGetSym               (nuonState*);
-void            nuonParseError           (nuonState*, const char*, const char*);
-void            nuonParseNode            (nuonState*); 
-void            nuonParseProperty        (nuonState*);
-void            nuonParseSetPropertyList (nuonState*);
-void            nuonParseSet             (nuonState*);
-void            nuonParseCreateNodeList  (nuonState*);
-void            nuonParseCreate          (nuonState*);
-void            nuonParseNodeList        (nuonState*);
-void            nuonParseReturn          (nuonState*);
-void            nuonParseWhere           (nuonState*);
-void            nuonParseSelect          (nuonState*);
+unsigned char*  nuonReadLine               (FILE*);
+void            nuonNextToken              (nuonState* state);
+void            nuonParse                  (unsigned char**);
+int             nuonAccept                 (nuonState*, nuonSymbol);
+int             nuonExpect                 (nuonState*, nuonSymbol);
+int             nuonPeek                   (nuonState*, nuonSymbol);
+void            nuonGetSym                 (nuonState*);
+void            nuonParseError             (nuonState*, const char*, const char*);
+void            nuonParseNode              (nuonState*); 
+void            nuonParseProperty          (nuonState*);
+void            nuonParseSetPropertyList   (nuonState*);
+void            nuonParseSet               (nuonState*);
+void            nuonParseCreateNodeList    (nuonState*);
+void            nuonParseCreate            (nuonState*);
+void            nuonParseNodeList          (nuonState*);
+void            nuonParseReturn            (nuonState*);
+void            nuonParseWhere             (nuonState*);
+void            nuonParseSelect            (nuonState*);
+void            nuonParseWherePropertyList (nuonState*);
+void            nuonParseVariableList      (nuonState*);
 
 #endif
