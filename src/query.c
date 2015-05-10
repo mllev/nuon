@@ -296,5 +296,5 @@ int main (void)
     l = line = nuonReadLine((FILE* )stdin);
     nuonParse(&line);
     free(l);
-  }
+  } 
 }
