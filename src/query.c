@@ -277,6 +277,7 @@ void nuonParseReturn (nuonState* state)
 {
   NUON_HANDLE_ERR(state);
 
+  nuonExpect(state, return_sym);
   nuonParseVariableList(state);
 }
 
